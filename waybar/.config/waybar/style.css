@@ -1,5 +1,4 @@
 * {
-  background-color: rgba(0, 0, 0, 0.5);
   font-family: FontAwesome, Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
   margin: 0;
@@ -12,6 +11,7 @@
 
 window#waybar {
   color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 window#waybar.hidden {
@@ -31,7 +31,7 @@ window#waybar.hidden {
 
 #custom-power {
   color: #ffffff;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 #battery,
@@ -107,5 +107,5 @@ window#waybar.hidden {
 }
 
 label:focus {
-  background-color: #000000;
+  /* background-color: #000000; */
 }
