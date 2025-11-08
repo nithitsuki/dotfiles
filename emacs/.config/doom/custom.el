@@ -4,9 +4,9 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("aec7b55f2a13307a55517fdf08438863d694550565dee23181d2ebd973ebd6b8"
-     "7771c8496c10162220af0ca7b7e61459cb42d18c35ce272a63461c0fc1336015" default))
- '(package-selected-packages '(org-modern org-roam org-roam-ui perfect-margin)))
+   '("ac113641de9b2ccdcd7b691cb59245f81f3104bd7c1114005159c92ac9502000"
+     "6d97269487797d073784b572f196aab0d604c11de1ef6ac88df6d75abbb912d6" default))
+ '(package-selected-packages '(gptel org-bullets org-modern org-roam-ui perfect-margin)))
 ;;(put 'customize-face 'disabled nil)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

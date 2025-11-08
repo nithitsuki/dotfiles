@@ -32,8 +32,9 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-monokai-pro)
-(set-frame-parameter nil 'alpha-background 85) ; For current frame
+;; (setq doom-theme 'doom-acario-dark)
+(load-theme 'fleury t)
+(set-frame-parameter nil 'alpha-background 30) ; For current frame
 (add-to-list 'default-frame-alist '(alpha-background . 85)) ; For all new frames henceforth
 (set-face-attribute 'default nil :height 130)
 (setq confirm-kill-emacs nil)
