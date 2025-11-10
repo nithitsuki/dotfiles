@@ -114,8 +114,8 @@
 (with-eval-after-load 'org (global-org-modern-mode))
 ;;(add-hook 'org-mode-hook 'olivetti-mode)
 
-(after! projectile (setq projectile-project-root-files-bottom-up (remove ".git"
-          projectile-project-root-files-bottom-up)))
+;; (after! projectile (setq projectile-project-root-files-bottom-up (remove ".git"
+;;           projectile-project-root-files-bottom-up)))
 
 (use-package! perfect-margin
   :config
