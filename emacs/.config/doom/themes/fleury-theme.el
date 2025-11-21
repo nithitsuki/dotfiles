@@ -112,7 +112,7 @@
                                            :weight 'bold
                                            :inherit 'unspecified))))))
 
-(add-hook 'prog-mode-hook 'hl-line-mode)
+;;(add-hook 'prog-mode-hook 'hl-line-mode)
 (setq-default cursor-type 'box)
 (defun fleury-theme-update-cursor-type ()
   (setq cursor-type

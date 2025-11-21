@@ -103,6 +103,6 @@ export PATH="$BUN_INSTALL/bin:$HOME/.platformio/penv/bin/:$PATH"
 path=("$HOME/.juliaup/bin" $path) # MODIFIED
 export PATH
 # <<< juliaup initialize <<<
-
+export COLORTERM=truecolor
 # Load zsh-syntax-highlighting; should be last.
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null

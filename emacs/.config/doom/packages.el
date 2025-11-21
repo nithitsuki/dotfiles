@@ -7,6 +7,14 @@
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;; (package! some-package)
+(package! gptel :recipe (:nonrecursive t))
+(package! org-bullets)
+(package! org-modern)
+(package! org-roam-ui)
+(package! ox-typst)
+(package! perfect-margin)
+(package! auctex)
+(package! base16-theme)
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:
@@ -20,8 +28,6 @@
 ;; (package! this-package
 ;;   :recipe (:host github :repo "username/repo"
 ;;            :files ("some-file.el" "src/lisp/*.el")))
-(package! org-modern)
-(package! perfect-margin)
 ;; If you'd like to disable a package included with Doom, you can do so here
 ;; with the `:disable' property:
 ;; (package! builtin-package :disable t)

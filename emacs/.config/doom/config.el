@@ -3,7 +3,12 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
-
+;;2 min experience review: I love it
+(setq evil-escape-key-sequence "jk")
+(map! :i (kbd "C-[") #'evil-normal-state)
+;; I sometimes overshoot ctrl [ . Neeed to get a biggger keyboard
+(map! :i (kbd "C-]") #'evil-normal-state)
+ 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
 ;; (setq user-full-name "John Doe"
@@ -33,7 +38,8 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 ;; (setq doom-theme 'doom-acario-dark)
-(load-theme 'fleury t)
+(load-theme 'base16-3024 t)
+
 (set-frame-parameter nil 'alpha-background 30) ; For current frame
 (add-to-list 'default-frame-alist '(alpha-background . 85)) ; For all new frames henceforth
 (set-face-attribute 'default nil :height 130)
@@ -57,7 +63,7 @@
                   org-image-actual-width '(300))
 
 (setq-default line-spacing 2)
-;; Resize Org headings
+
 ;;(add-hook 'org-mode-hook 'olivetti-mode)
 
 ;;Better Headers
@@ -132,3 +138,22 @@
          "* Event: %?\n\n  %i\n\n  From: %a"
          :empty-lines 1)
 ))
+
+
+;; gpt.el config
+(use-package! gptel
+ :config
+ (setq! gptel-api-key (getenv "OPENAI_API_KEY"))
+ (gptel-make-anthropic "Personal Claude";Any name you want
+  :stream t                             ;Streaming responses
+  :key (getenv "CLAUDE_KEY"))
+ (gptel-make-gh-copilot "Copilot")
+)
+
+;; terminal transparency
+(defun on-after-init ()
+  (unless (display-graphic-p (selected-frame))
+    (set-face-background 'default "unspecified-bg" (selected-frame))
+    (set-face-background 'minibuffer "unspecified-bg" (selected-frame))
+    (set-face-background 'header-line "unspecified-bg" (selected-frame))))
+(add-hook 'window-setup-hook #'on-after-init)
