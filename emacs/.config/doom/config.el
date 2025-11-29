@@ -139,6 +139,12 @@
          :empty-lines 1)
 ))
 
+(use-package! org-habit
+  :after org
+  :config
+  (setq org-habit-following-days 1
+        org-habit-preceding-days 3
+        org-habit-show-habits t))
 
 ;; gpt.el config
 (use-package! gptel
