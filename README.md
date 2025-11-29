@@ -7,9 +7,9 @@ git clone https://github.com/nithitsuki/dotfiles.git .dotfiles
 cd .dotfiles
 stow  -n * # dry run to see what will be symlinked
 # run the above command without -n to actually create the symlinks
+sudo stow -t / keyd #only for keyd as it's an /etc config file
+# DO NOT USE SUDO OR -t / FOR ANY OTHER FOLDER
 ```
-
-TODO: add waybar from laptop
 
 ## Important Notes
 
