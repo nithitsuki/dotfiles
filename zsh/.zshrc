@@ -107,3 +107,7 @@ export COLORTERM=truecolor
 # Load zsh-syntax-highlighting; should be last.
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
+export GPG_TTY=$(tty)
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+gpg-connect-agent updatestartuptty /bye > /dev/null
+export PATH=$PATH:/opt/rtems/7/bin
