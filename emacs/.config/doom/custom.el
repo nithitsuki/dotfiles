@@ -4,7 +4,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("1c161490318aca57b35c5850e6ea7c0ed0ca34e00048f463b3ee7c8d28e49361" default)))
+   '("1c161490318aca57b35c5850e6ea7c0ed0ca34e00048f463b3ee7c8d28e49361" default))
+ '(package-selected-packages
+   '(cdlatex gptel org-bullets org-habit-stats org-modern org-roam-ui
+     perfect-margin)))
 ;;(put 'customize-face 'disabled nil)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

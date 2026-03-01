@@ -4,8 +4,10 @@
     "modules-left": [
         "cpu",
         "memory",
-      "hyprland/workspaces",
         "hyprland/mode"
+    ],
+    "modules-center": [
+      "hyprland/workspaces"
     ],
     "modules-right": [
         "backlight",
@@ -18,7 +20,7 @@
     ],
 
     "custom/power": {
-        "format" : "⏻",
+        "format" : "⏻ ",
         "tooltip": "Logout/Shut Down/Reboot",
         "on-click": "wlogout"
     },

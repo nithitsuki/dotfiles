@@ -26,8 +26,6 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq doom-font (font-spec :family "SF Mono" :size 14)
-      doom-variable-pitch-font (font-spec :family "SF Mono" :size 16))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -38,13 +36,13 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 ;; (setq doom-theme 'doom-acario-dark)
-(load-theme 'base16-3024 t)
+(setq doom-theme 'base16-3024)
+(setq doom-font (font-spec :family "SF Mono" :size 14)
+      doom-variable-pitch-font (font-spec :family "SF Mono" :size 16))
+(add-to-list 'default-frame-alist '(alpha-background . 85))
+(set-frame-parameter nil 'alpha-background 85)
 
-(set-frame-parameter nil 'alpha-background 30) ; For current frame
-(add-to-list 'default-frame-alist '(alpha-background . 85)) ; For all new frames henceforth
-(set-face-attribute 'default nil :height 130)
 (setq confirm-kill-emacs nil)
-
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
@@ -63,6 +61,41 @@
                   org-image-actual-width '(300))
 
 (setq-default line-spacing 2)
+
+(after! org
+  (setq org-priority-highest ?A
+        org-priority-lowest  ?F
+        org-priority-default ?D)
+
+  (setq org-priority-faces
+        '((?A . (:foreground "#ff5555" :weight bold :inherit nil))
+          (?B . (:foreground "#ffb86c" :weight bold :inherit nil))
+          (?C . (:foreground "#f1fa8c" :weight bold :inherit nil))
+          (?D . (:foreground "#50fa7b" :weight bold :inherit nil))
+          (?E . (:foreground "#8be9fd" :weight bold :inherit nil))
+          (?F . (:foreground "#6272a4" :weight bold :inherit nil))))
+  ;; This forces Emacs to refresh the colors in the current buffer
+  (setq org-fontify-whole-heading-line t))
+
+(map! :after org
+      :map org-mode-map
+      :localleader
+
+      (:prefix ("p" . "priority")
+       :desc "Critical"    "a" (lambda () (interactive) (org-priority ?A))
+       :desc "Severe"      "b" (lambda () (interactive) (org-priority ?B))
+       :desc "High"        "c" (lambda () (interactive) (org-priority ?C))
+       :desc "Medium"      "d" (lambda () (interactive) (org-priority ?D))
+       :desc "Minor"       "e" (lambda () (interactive) (org-priority ?E))
+       :desc "Unimportant" "f" (lambda () (interactive) (org-priority ?F)))
+
+      (:prefix ("j" . "jira size/effort") 
+       :desc "XS (Tiny)"     "x" (lambda () (interactive) (org-toggle-tag "XS"))
+       :desc "S  (Small)"    "s" (lambda () (interactive) (org-toggle-tag "SM"))
+       :desc "M  (Medium)"   "m" (lambda () (interactive) (org-toggle-tag "MD"))
+       :desc "L  (Large)"    "l" (lambda () (interactive) (org-toggle-tag "LG"))
+       :desc "XL (Epic)"     "X" (lambda () (interactive) (org-toggle-tag "XL"))
+       :desc "XXL(Massive)"  "z" (lambda () (interactive) (org-toggle-tag "XXL"))))
 
 ;;(add-hook 'org-mode-hook 'olivetti-mode)
 
@@ -122,6 +155,9 @@
 
 ;; (after! projectile (setq projectile-project-root-files-bottom-up (remove ".git"
 ;;           projectile-project-root-files-bottom-up)))
+(after! projectile
+  (add-to-list 'projectile-ignored-projects "~/")
+  (add-to-list 'projectile-ignored-projects (expand-file-name "~")))
 
 (use-package! perfect-margin
   :config
