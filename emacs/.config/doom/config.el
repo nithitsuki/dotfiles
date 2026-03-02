@@ -1,66 +1,151 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!
+;;; ============================================================================
+;;; GENERAL SETTINGS
+;;; ============================================================================
 
-;;2 min experience review: I love it
+(setq confirm-kill-emacs nil)
+(setq display-line-numbers-type t)
+(setq-default line-spacing 2)
+
+;;; ============================================================================
+;;; KEYBINDINGS
+;;; ============================================================================
+
+;; Evil escape
 (setq evil-escape-key-sequence "jk")
 (map! :i (kbd "C-[") #'evil-normal-state)
-;; I sometimes overshoot ctrl [ . Neeed to get a biggger keyboard
-(map! :i (kbd "C-]") #'evil-normal-state)
- 
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets. It is optional.
-;; (setq user-full-name "John Doe"
-;;       user-mail-address "john@doe.com")
+(map! :i (kbd "C-]") #'evil-normal-state) ; overshoot guard for C-[
 
-;; Doom exposes five (optional) variables for controlling fonts in Doom:
-;;
-;; - `doom-font' -- the primary font to use
-;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
-;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;; - `doom-symbol-font' -- for symbols
-;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
-;;
-;; See 'C-h v doom-font' for documentation and more examples of what they
-;; accept. For example:
-;;
-;;
-;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
-;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
-;; refresh your font settings. If Emacs still can't find your font, it likely
-;; wasn't installed correctly. Font issues are rarely Doom issues!
+;;; ============================================================================
+;;; UI / APPEARANCE
+;;; ============================================================================
 
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-;; (setq doom-theme 'doom-acario-dark)
+;; Theme & fonts
 (setq doom-theme 'base16-3024)
 (setq doom-font (font-spec :family "SF Mono" :size 14)
       doom-variable-pitch-font (font-spec :family "SF Mono" :size 16))
+
+;; Frame transparency
 (add-to-list 'default-frame-alist '(alpha-background . 85))
 (set-frame-parameter nil 'alpha-background 85)
 
-(setq confirm-kill-emacs nil)
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+;; Terminal transparency — clear bg in non-GUI frames
+(defun on-after-init ()
+  (unless (display-graphic-p (selected-frame))
+    (set-face-background 'default "unspecified-bg" (selected-frame))
+    (set-face-background 'minibuffer "unspecified-bg" (selected-frame))
+    (set-face-background 'header-line "unspecified-bg" (selected-frame))))
+(add-hook 'window-setup-hook #'on-after-init)
 
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Documents/life2/")
-(setq org-agenda-span 48)
-;; org configs
-    ;; Improve org mode looks
-    (setq-default org-startup-indented t
-                  org-pretty-entities t
-                  org-use-sub-superscripts "{}"
-                  org-hide-emphasis-markers t
-                  org-startup-with-inline-images t
-                  org-image-actual-width '(300))
+;; Centering / margins
+(use-package! perfect-margin
+  :config
+  (after! doom-modeline
+    (setq mode-line-right-align-edge 'right-fringe))
+  (perfect-margin-mode t)
+  (setq perfect-margin-visible-width 98))
 
-(setq-default line-spacing 2)
+;;; ============================================================================
+;;; ORG MODE
+;;; ============================================================================
+
+(setq org-directory "~/Documents/org/")
+
+;; --- Agenda ------------------------------------------------------------------
+
+(org-super-agenda-mode 1)
+(setq org-agenda-files (list org-directory))
+
+;; Global super-agenda groups — applies to TODO list, daily agenda, etc.
+(setq org-super-agenda-groups
+      '((:name "Overdue"
+         :deadline past
+         :face (:foreground "#ff5555" :weight bold))
+        (:name "Upcoming Deadlines"
+         :deadline future)
+        (:name "Scheduled"
+         :scheduled future)
+        (:name "Next Actions"
+         :todo "NEXT")
+        (:name "Critical  [#A]"
+         :priority "A")
+        (:name "Severe  [#B]"
+         :priority "B")
+        (:name "High  [#C]"
+         :priority "C")
+        (:name "Waiting"
+         :todo "WAITING")
+        (:name "Medium  [#D]"
+         :priority "D")
+        (:name "Low  [#E-F]"
+         :priority<= "E")
+        (:name "Other Items"
+         :anything t)))
+
+;; Clean prefix: category + relative date
+(defun my/agenda-date-prefix ()
+  "Return relative days until deadline or scheduled date."
+  (let* ((dl (org-entry-get (point) "DEADLINE"))
+         (sc (org-entry-get (point) "SCHEDULED"))
+         (ts (or dl sc)))
+    (if ts
+        (let* ((days (- (org-time-string-to-absolute ts)
+                        (org-today))))
+          (cond ((< days 0) (format "%dd ago" (abs days)))
+                ((= days 0) "Today")
+                ((= days 1) "Tomorrow")
+                (t (format "In %dd" days))))
+      "")))
+
+(setq org-agenda-prefix-format
+      '((agenda . " %i %-6:c%?-8% s")
+        (todo   . " %i %-6:c%-8(my/agenda-date-prefix)")
+        (tags   . " %i %-6:c%-8(my/agenda-date-prefix)")
+        (search . " %i %-6:c")))
+
+;; Show deadline/scheduled info inline with the item
+(setq org-agenda-deadline-leaders '("!!! " "In %2dd: " "%2dd ago: ")
+      org-agenda-scheduled-leaders '("" "Sched.%2dx: "))
+
+;; Cleaner agenda appearance
+(setq org-agenda-block-separator "\n─────────────────────────────────────────────────────────────"
+      org-agenda-tags-column -80
+      org-agenda-compact-blocks t
+      org-agenda-start-with-log-mode nil
+      org-agenda-skip-unavailable-files t
+      org-agenda-skip-scheduled-if-done t
+      org-agenda-skip-deadline-if-done t
+      org-agenda-include-deadlines t
+      org-deadline-warning-days 14
+      org-agenda-span 14
+      org-agenda-start-on-weekday nil
+      org-agenda-start-day nil)
+
+;; Show scheduled events (non-TODO) in agenda views
+(setq org-agenda-entry-types '(:deadline :scheduled :timestamp :sexp)
+      org-agenda-todo-list-sublevels t)
+
+;; "e" for Everything — like TODO view but includes non-TODO scheduled items
+(setq org-agenda-custom-commands
+      '(("e" "Everything (TODOs + Events)"
+         ((alltodo ""
+                   ((org-agenda-overriding-header "All Tasks")
+                    (org-agenda-sorting-strategy '(deadline-up scheduled-up priority-down))))
+          (tags "SCHEDULED>=\"<today>\""
+                ((org-agenda-overriding-header "\nUpcoming Events (non-TODO)")
+                 (org-agenda-sorting-strategy '(scheduled-up))
+                 (org-agenda-skip-function
+                  '(org-agenda-skip-entry-if 'todo '("TODO" "NEXT" "WAITING" "DONE" "CANCELLED")))))))))
+
+;; --- Priorities (A–F) --------------------------------------------------------
+
+(defface org-priority-face-a '((t :foreground "#ff5555" :weight bold)) "Priority A")
+(defface org-priority-face-b '((t :foreground "#ffb86c" :weight bold)) "Priority B")
+(defface org-priority-face-c '((t :foreground "#f1fa8c" :weight bold)) "Priority C")
+(defface org-priority-face-d '((t :foreground "#50fa7b" :weight bold)) "Priority D")
+(defface org-priority-face-e '((t :foreground "#8be9fd" :weight bold)) "Priority E")
+(defface org-priority-face-f '((t :foreground "#6272a4" :weight bold)) "Priority F")
 
 (after! org
   (setq org-priority-highest ?A
@@ -68,14 +153,24 @@
         org-priority-default ?D)
 
   (setq org-priority-faces
-        '((?A . (:foreground "#ff5555" :weight bold :inherit nil))
-          (?B . (:foreground "#ffb86c" :weight bold :inherit nil))
-          (?C . (:foreground "#f1fa8c" :weight bold :inherit nil))
-          (?D . (:foreground "#50fa7b" :weight bold :inherit nil))
-          (?E . (:foreground "#8be9fd" :weight bold :inherit nil))
-          (?F . (:foreground "#6272a4" :weight bold :inherit nil))))
-  ;; This forces Emacs to refresh the colors in the current buffer
-  (setq org-fontify-whole-heading-line t))
+        '((?A . org-priority-face-a)
+          (?B . org-priority-face-b)
+          (?C . org-priority-face-c)
+          (?D . org-priority-face-d)
+          (?E . org-priority-face-e)
+          (?F . org-priority-face-f)))
+
+  (setq org-fontify-whole-heading-line t)
+
+  ;; Make priority colors work in agenda view
+  (setq org-agenda-fontify-priorities 'cookies))
+
+;; Prevent Doom's theme from overriding priority colors
+(custom-set-faces!
+  '(org-priority :inherit nil :foreground nil)
+  '(org-agenda-structure :inherit nil))
+
+;; --- Org keybindings ---------------------------------------------------------
 
 (map! :after org
       :map org-mode-map
@@ -89,7 +184,7 @@
        :desc "Minor"       "e" (lambda () (interactive) (org-priority ?E))
        :desc "Unimportant" "f" (lambda () (interactive) (org-priority ?F)))
 
-      (:prefix ("j" . "jira size/effort") 
+      (:prefix ("j" . "jira size/effort")
        :desc "XS (Tiny)"     "x" (lambda () (interactive) (org-toggle-tag "XS"))
        :desc "S  (Small)"    "s" (lambda () (interactive) (org-toggle-tag "SM"))
        :desc "M  (Medium)"   "m" (lambda () (interactive) (org-toggle-tag "MD"))
@@ -97,83 +192,15 @@
        :desc "XL (Epic)"     "X" (lambda () (interactive) (org-toggle-tag "XL"))
        :desc "XXL(Massive)"  "z" (lambda () (interactive) (org-toggle-tag "XXL"))))
 
-;;(add-hook 'org-mode-hook 'olivetti-mode)
+;; --- Capture templates -------------------------------------------------------
 
-;;Better Headers
-;; (let* ((variable-tuple (cond ((x-list-fonts "SF Mono") '(:font "Source Sans Pro"))
-;;                              ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-;;                              ((x-list-fonts "Verdana")         '(:font "Verdana"))
-;;                              ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-;;                              (nil (warn "Cannot find a Sans Serif Font.  Install SF Mono."))))
-       ;; (base-font-color     (face-foreground 'default nil 'default))
-       ;; (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
-
-
-
-;; Whenever you reconfigure a package, make sure to wrap your config in an
-;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
-;;
-;;   (after! PACKAGE
-;;     (setq x y))
-;
-;; The exceptions to this rule:
-;;
-;;   - Setting file/directory variables (like `org-directory')
-;;   - Setting variables which explicitly tell you to set them before their
-;;     package is loaded (see 'C-h v VARIABLE' to look up their documentation).
-;;   - Setting doom variables (which start with 'doom-' or '+').
-;;
-;; Here are some additional functions/macros that will help you configure Doom.
-;;
-;; - `load!' for loading external *.el files relative to this one
-;; - `use-package!' for configuring packages
-;; - `after!' for running code after a package has loaded
-;; - `add-load-path!' for adding directories to the `load-path', relative to
-;;   this file. Emacs searches the `load-path' when you load packages with
-;;   `require' or `use-package'.
-;; - `map!' for binding new keys
-;;
-;; To get information about any of these functions/macros, move the cursor over
-;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
-;; This will open documentation for it, including demos of how they are used.
-;; Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
-;; etc).
-;;
-;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
-;; they are implemented.
-  (use-package org-modern
-    :hook
-    (org-mode . global-org-modern-mode)
-    :custom
-    (org-modern-keyword nil)
-    ;;(org-modern-checkbox nil)
-    ;;(org-modern-table nil)
-    ;;(org-modern--star nil)
-    )
-(with-eval-after-load 'org (global-org-modern-mode))
-;;(add-hook 'org-mode-hook 'olivetti-mode)
-
-;; (after! projectile (setq projectile-project-root-files-bottom-up (remove ".git"
-;;           projectile-project-root-files-bottom-up)))
-(after! projectile
-  (add-to-list 'projectile-ignored-projects "~/")
-  (add-to-list 'projectile-ignored-projects (expand-file-name "~")))
-
-(use-package! perfect-margin
-  :config
-   (after! doom-modeline
-     (setq mode-line-right-align-edge 'right-fringe))
-  ;; (setq perfect-margin-only-set-left-margin t)
-  (perfect-margin-mode t)
-  (setq perfect-margin-visible-width 98)
-)
-
-(setq org-capture-templates '(
-    ("j" "Journal Entry"
-         entry (file+datetree "~/Documents/life2/Jounral.org")
+(setq org-capture-templates
+      '(("j" "Journal Entry"
+         entry (file+datetree "~/Documents/org/Jounral.org")
          "* Event: %?\n\n  %i\n\n  From: %a"
-         :empty-lines 1)
-))
+         :empty-lines 1)))
+
+;; --- Org packages ------------------------------------------------------------
 
 (use-package! org-habit
   :after org
@@ -182,20 +209,30 @@
         org-habit-preceding-days 3
         org-habit-show-habits t))
 
-;; gpt.el config
-(use-package! gptel
- :config
- (setq! gptel-api-key (getenv "OPENAI_API_KEY"))
- (gptel-make-anthropic "Personal Claude";Any name you want
-  :stream t                             ;Streaming responses
-  :key (getenv "CLAUDE_KEY"))
- (gptel-make-gh-copilot "Copilot")
-)
+(use-package! org-modern
+  :hook (org-mode . global-org-modern-mode)
+  :custom
+  (org-modern-keyword nil)
+  (org-modern-priority nil)  ; let our custom priority faces apply
+  (org-modern-tag t))        ; keep tag rendering, use theme's face
+(with-eval-after-load 'org (global-org-modern-mode))
 
-;; terminal transparency
-(defun on-after-init ()
-  (unless (display-graphic-p (selected-frame))
-    (set-face-background 'default "unspecified-bg" (selected-frame))
-    (set-face-background 'minibuffer "unspecified-bg" (selected-frame))
-    (set-face-background 'header-line "unspecified-bg" (selected-frame))))
-(add-hook 'window-setup-hook #'on-after-init)
+;;; ============================================================================
+;;; PROJECT MANAGEMENT
+;;; ============================================================================
+
+(after! projectile
+  (add-to-list 'projectile-ignored-projects "~/")
+  (add-to-list 'projectile-ignored-projects (expand-file-name "~")))
+
+;;; ============================================================================
+;;; AI / LLM
+;;; ============================================================================
+
+(use-package! gptel
+  :config
+  (setq! gptel-api-key (getenv "OPENAI_API_KEY"))
+  (gptel-make-anthropic "Personal Claude"
+    :stream t
+    :key (getenv "CLAUDE_KEY"))
+  (gptel-make-gh-copilot "Copilot"))
