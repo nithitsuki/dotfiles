@@ -236,3 +236,4 @@
     :stream t
     :key (getenv "CLAUDE_KEY"))
   (gptel-make-gh-copilot "Copilot"))
+(setq doom-emoji-font (font-spec :family "Segoe UI Emoji"))
