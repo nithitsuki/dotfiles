@@ -49,9 +49,12 @@
 ;;; ============================================================================
 ;;; ORG MODE
 ;;; ============================================================================
-
-(setq org-directory "~/Documents/org/")
-
+(after! org
+  (setq org-directory "~/Documents/org/")
+  ;;(setq org-startup-with-latex-preview t)
+  (setq org-preview-latex-default-process 'dvisvgm)
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 0.5))
+)
 ;; --- Agenda ------------------------------------------------------------------
 
 (org-super-agenda-mode 1)
