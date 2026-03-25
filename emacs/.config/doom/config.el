@@ -71,17 +71,17 @@
          :scheduled future)
         (:name "Next Actions"
          :todo "NEXT")
-        (:name "Critical  [#A]"
+        (:name "Critical "
          :priority "A")
-        (:name "Severe  [#B]"
+        (:name "Severe "
          :priority "B")
-        (:name "High  [#C]"
+        (:name "High "
          :priority "C")
         (:name "Waiting"
          :todo "WAITING")
-        (:name "Medium  [#D]"
+        (:name "Medium "
          :priority "D")
-        (:name "Low  [#E-F]"
+        (:name "Low "
          :priority<= "E")
         (:name "Other Items"
          :anything t)))
@@ -95,17 +95,20 @@
     (if ts
         (let* ((days (- (org-time-string-to-absolute ts)
                         (org-today))))
-          (cond ((< days 0) (format "%dd ago" (abs days)))
+          (cond ((< days 0)
+                 (if (= (abs days) 1)
+                     "1 day ago"
+                   (format "%d days ago" (abs days))))
                 ((= days 0) "Today")
-                ((= days 1) "Tomorrow")
-                (t (format "In %dd" days))))
+                ((= days 1) "In 1 day")
+                (t (format "In %d days" days))))
       "")))
 
 (setq org-agenda-prefix-format
-      '((agenda . " %i %-6:c%?-8% s")
-        (todo   . " %i %-6:c%-8(my/agenda-date-prefix)")
-        (tags   . " %i %-6:c%-8(my/agenda-date-prefix)")
-        (search . " %i %-6:c")))
+      '((agenda . " %i   %(my/agenda-date-prefix)   ")
+        (todo   . " %i   %(my/agenda-date-prefix)   ")
+        (tags   . " %i   %(my/agenda-date-prefix)   ")
+        (search . " %i")))
 
 ;; Show deadline/scheduled info inline with the item
 (setq org-agenda-deadline-leaders '("!!! " "In %2dd: " "%2dd ago: ")

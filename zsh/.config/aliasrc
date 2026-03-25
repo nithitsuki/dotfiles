@@ -16,3 +16,4 @@ alias get-music='yt-dlp -f "bestaudio/best" -ciw -o "%(title)s.%(ext)s" -v --ext
 alias get-video='yt-dlp -o "%(title)s.%(ext)s" -v -cw -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" '
 alias vim='nvim'
 alias e='emacsclient -t'
+alias get_idf='. /opt/esp/esp-idf/export.sh'
