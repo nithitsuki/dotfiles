@@ -95,8 +95,8 @@ esac
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun" # MODIFIED
 
 # bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$HOME/.platformio/penv/bin/:$PATH"
+#export BUN_INSTALL="$HOME/.bun"
+#export PATH="$BUN_INSTALL/bin:$HOME/.platformio/penv/bin/:$PATH"
 
 # >>> juliaup initialize >>>
 # !! Contents within this block are managed by juliaup !!
@@ -110,5 +110,4 @@ source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 export GPG_TTY=$(tty)
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 gpg-connect-agent updatestartuptty /bye > /dev/null
-export PATH=$PATH:/opt/rtems/7/bin
-export PATH=$PATH:~/.ghcup/bin/
+#export PATH=$PATH:/opt/rtems/7/bin
