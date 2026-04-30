@@ -49,6 +49,12 @@
 ;;; ============================================================================
 ;;; ORG MODE
 ;;; ============================================================================
+
+;;; start scratch buffers in org mode by default
+(setq initial-major-mode 'org-mode)
+(setq doom-scratch-initial-major-mode 'org-mode)
+
+;;; org-directory for agenda and stuff
 (after! org
   (setq org-directory "~/Documents/org/")
   ;;(setq org-startup-with-latex-preview t)
