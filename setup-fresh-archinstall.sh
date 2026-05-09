@@ -106,52 +106,72 @@ fi
 # ==============================================================================
 # Array format: "package_name" "Description" "ON/OFF"
 BASE_TOOLS=(
-    "wget" "Network downloader" "ON"
-    "github-cli" "GitHub command line tool" "ON"
-    "stow" "Symlink manager (for dots)" "ON"
+    # --- Shell & Terminal ---
+    "zsh" "Z shell" "ON"
+    "zsh-autosuggestions" "Fish-like autosuggestions for zsh" "ON"
+    "zsh-completions" "Additional completion definitions for Zsh" "ON"
+    "awesome-terminal-fonts" "Icon fonts for terminals" "ON"
+    "tmux" "Terminal multiplexer" "ON"
+    
+    # --- Text Editors ---
     "emacs-wayland" "Extensible text editor (Doom dependency)" "ON"
     "neovim" "Vim-fork focused on extensibility" "ON"
+    
+    # --- File Management ---
+    "stow" "Symlink manager (for dots)" "ON"
+    "yazi" "Blazing fast terminal file manager" "ON"
+    "lsd" "Next-gen ls command" "ON"
+    "zip" "Compression utility" "ON"
+    "unzip" "Extraction utility" "ON"
+    "7zip" "(yazi dep) File archiver" "ON"
+    
+    # --- System Monitoring & Info ---
     "fastfetch" "System information fetcher" "ON"
     "htop" "Interactive process viewer" "ON"
     "btop" "Resource monitor (C++)" "ON"
-    "yazi" "Blazing fast terminal file manager" "ON"
-    "ffmpeg" "(yazi dep) Video processing" "ON"
-    "7zip" "(yazi dep) File archiver" "ON"
-    "jq" "(yazi dep) JSON processor" "ON"
-    "poppler" "(yazi dep) PDF rendering" "ON"
-    "fd" "(yazi dep) Simple fast find" "ON"
-    "ripgrep" "(yazi dep) Blazing fast grep" "ON"
-    "fzf" "(yazi dep) Fuzzy finder" "ON"
-    "zoxide" "(yazi dep) Smarter cd" "ON"
-    "imagemagick" "(yazi dep) Image viewing" "ON"
-    "resvg" "(yazi dep - AUR) SVG rendering" "ON"
-    "zip" "Compression utility" "ON"
-    "unzip" "Extraction utility" "ON"
-    "keepassxc" "Password manager CLI" "ON"
-    "keyd" "(AUR) Key remapping daemon" "ON"
-    "zsh" "Z shell" "ON"
-    "lsd" "Next-gen ls command" "ON"
+    "lm_sensors" "Hardware monitoring tools" "ON"
+    "cava" "Terminal-based audio visualizer" "ON"
+    
+    # --- Networking ---
+    "wget" "Network downloader" "ON"
     "net-tools" "Network utilities" "ON"
     "networkmanager" "Network connection manager (incl. nmtui)" "ON"
     "ufw" "Uncomplicated Firewall" "ON"
-    "awesome-terminal-fonts" "Icon fonts for terminals" "ON"
-    "zsh-autosuggestions" "Fish-like autosuggestions for zsh" "ON"
-    "zsh-completions" "Additional completion definitions for Zsh" "ON"
-    "man-db" "Standard man pages tool" "ON"
-    "man-pages" "Linux man pages" "ON"
-    "cava" "Terminal-based audio visualizer" "ON"
+    
+    # --- Git & Development ---
+    "github-cli" "GitHub command line tool" "ON"
+    "lazygit" "Simple terminal UI for git" "ON"
+    "devtools" "Development tools" "ON"
+    
+    # --- Security & Password ---
+    "keepassxc" "Password manager CLI" "ON"
+    "keyd" "(AUR) Key remapping daemon" "ON"
+    
+    # --- Audio/Video ---
     "pipewire" "Low-latency audio/video router and server" "ON"
     "pipewire-pulse" "PulseAudio replacement for PipeWire" "ON"
     "pipewire-alsa" "ALSA configuration for PipeWire" "ON"
     "pipewire-jack" "JACK replacement for PipeWire" "ON"
     "wireplumber" "Session / policy manager for PipeWire" "ON"
-    # --- Suggested Additions ---
+    "ffmpeg" "(yazi dep) Video processing" "ON"
+    
+    # --- Utilities & Tools ---
     "bat" "Cat clone with syntax highlighting" "ON"
-    "devtools" "Development tools" "ON"
-    "tmux" "Terminal multiplexer" "ON"
-    "lazygit" "Simple terminal UI for git" "ON"
+    "fzf" "(yazi dep) Fuzzy finder" "ON"
+    "fd" "(yazi dep) Simple fast find" "ON"
+    "ripgrep" "(yazi dep) Blazing fast grep" "ON"
+    "zoxide" "(yazi dep) Smarter cd" "ON"
+    "jq" "(yazi dep) JSON processor" "ON"
     "tealdeer" "Community-driven man pages (tldr)" "ON"
-    "lm_sensors" "Hardware monitoring tools" "ON"
+    
+    # --- Documentation ---
+    "man-db" "Standard man pages tool" "ON"
+    "man-pages" "Linux man pages" "ON"
+    
+    # --- Image & Document Processing ---
+    "imagemagick" "(yazi dep) Image viewing" "ON"
+    "poppler" "(yazi dep) PDF rendering" "ON"
+    "resvg" "(yazi dep - AUR) SVG rendering" "ON"
 )
 
 SELECTED_BASE=$(whiptail --title "Base Packages & Development Tools" --backtitle "$BACKTITLE" \
@@ -166,7 +186,6 @@ GUI_TOOLS=(
     "ly" "TUI display manager" "ON"
     "hyprland" "Wayland compositor" "ON"
     "waybar" "Highly customizable Wayland bar" "ON"
-    "hyprctl" "Hyprland control utility" "ON"
     "hyprlauncher" "Application launcher" "ON"
     "hyprlock" "Screen locker" "ON"
     "hypridle" "Screen idle" "ON"
@@ -178,6 +197,7 @@ GUI_TOOLS=(
     "xdg-desktop-portal-termfilechooser-hunkyburrito-git" "(AUR) Terminal file chooser portal" "ON"
     "hyprmon-bin" "(AUR)  TUI monitor configuration tool for Hyprland" "ON"
 
+    "tesseract-data-eng" "Tesseract OCR English language data" "ON"
     "firefox" "Web browser" "ON"
     "discord" "Voice and text chat" "ON"
     "vlc" "Media player" "ON"
