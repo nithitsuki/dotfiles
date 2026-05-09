@@ -156,6 +156,7 @@ BASE_TOOLS=(
     "pipewire-alsa" "ALSA configuration for PipeWire" "ON"
     "pipewire-jack" "JACK replacement for PipeWire" "ON"
     "wireplumber" "Session / policy manager for PipeWire" "ON"
+    "wiremix" "(AUR) Mixer for PipeWire" "ON"
     "ffmpeg" "(yazi dep) Video processing" "ON"
     
     # --- Utilities & Tools ---
@@ -175,6 +176,16 @@ BASE_TOOLS=(
     "imagemagick" "(yazi dep) Image viewing" "ON"
     "poppler" "(yazi dep) PDF rendering" "ON"
     "resvg" "(yazi dep - AUR) SVG rendering" "ON"
+
+    # --- Disk & Partition Tools ---
+    "gparted" "Partition editor" "ON"
+    "exfatprogs" "exFAT filesystem utilities" "ON"
+    "mtools" "MS-DOS tools" "ON"
+    "udftools" "UDF filesystem utilities" "ON"
+    "gpart" "Partition recovery tool" "ON"
+    "ntfsprogs" "NTFS filesystem utilities" "ON"
+    "dosfstools" "FAT filesystem utilities" "ON"
+    "parted" "Partition manipulation tool" "ON"
 )
 
 SELECTED_BASE=$(whiptail --title "Base Packages & Development Tools" --backtitle "$BACKTITLE" \
@@ -186,6 +197,7 @@ if [ -z "$SELECTED_BASE" ]; then
 fi
 
 GUI_TOOLS=(
+    "xorg-xhost" "X server access control utility (for XWayland apps)" "ON"
     "hyprland" "Wayland compositor" "ON"
     "waybar" "Highly customizable Wayland bar" "ON"
     "hyprlauncher" "Application launcher" "ON"
@@ -203,7 +215,6 @@ GUI_TOOLS=(
     "firefox" "Web browser" "ON"
     "discord" "Voice and text chat" "ON"
     "vlc" "Media player" "ON"
-    "pwvucontrol" "(AUR) GUI mixer for PipeWire" "ON"
     "gwenview" "Image viewer" "ON"
     "grim" "Screenshot utility" "ON"
     "zathura" "Minimal document viewer" "ON"
@@ -224,6 +235,8 @@ GUI_TOOLS=(
 
     # --- Optional Additions ---
     "libreoffice-fresh" "Office suite" "OFF"
+    "apple-fonts" "(AUR) Collection of Apple system fonts" "ON"
+    "ttf-apple-emoji" "(AUR) Apple emoji font" "ON"
     "krita" "Digital painting program" "OFF"
     "gimp" "GNU Image Manipulation Program" "OFF"
 )
