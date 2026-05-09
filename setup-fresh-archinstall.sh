@@ -164,33 +164,41 @@ fi
 
 GUI_TOOLS=(
     "ly" "TUI display manager" "ON"
-    "hyprlauncher" "Application launcher" "ON"
-    "hyprlock" "Screen locker" "ON"
-    "hyprpaper" "Wallpaper manager" "ON"
-    "hyprpolkitagent" "Polkit agent for Hyprland" "ON"
-    "hypridle" "Screen idle" "ON"
-    "hyprpicker" "Color picker" "ON"
     "hyprland" "Wayland compositor" "ON"
     "waybar" "Highly customizable Wayland bar" "ON"
+    "hyprctl" "Hyprland control utility" "ON"
+    "hyprlauncher" "Application launcher" "ON"
+    "hyprlock" "Screen locker" "ON"
+    "hypridle" "Screen idle" "ON"
+    "hyprpaper" "Wallpaper manager" "ON"
+    "hyprpolkitagent" "Polkit agent for Hyprland" "ON"
+    "hyprpicker" "Color picker" "ON"
     "kitty" "Fast, feature-rich, GPU-based terminal" "ON"
     "xdg-desktop-portal-hyprland" "xdg-desktop-portal backend for hyprland" "ON"
     "xdg-desktop-portal-termfilechooser-hunkyburrito-git" "(AUR) Terminal file chooser portal" "ON"
+    "hyprmon-bin" "(AUR)  TUI monitor configuration tool for Hyprland" "ON"
+
     "firefox" "Web browser" "ON"
-    "vlc" "Media player" "ON"
     "discord" "Voice and text chat" "ON"
+    "vlc" "Media player" "ON"
     "gwenview" "Image viewer" "ON"
+    "grim" "Screenshot utility" "ON"
     "zathura" "Minimal document viewer" "ON"
     "zathura-pdf-mupdf" "PDF support for zathura" "ON"
     "zaread-git" "(AUR) Read documents via terminal/zathura" "ON"
+
     "gnupg" "GNU Privacy Guard (for gpg-agent)" "ON"
     "pinentry" "Allows gpg-agent to prompt for passphrases" "ON"
+
     "vulkan-radeon" "Vulkan driver for AMD GPUs" "OFF"
     "vulkan-intel" "Vulkan driver for Intel GPUs" "OFF"
     "mesa" "Open-source OpenGL drivers" "ON"
+
     "wl-clipboard" "Wayland clipboard utilities" "ON"
     "cups" "Printing system" "ON"
     "poppler-data" "Additional data files for poppler (e.g. fonts)" "ON"
     "chafa" "Terminal graphics renderer (for fastfetch, yazi, etc)" "ON"
+
     # --- Optional Additions ---
     "libreoffice-fresh" "Office suite" "OFF"
     "krita" "Digital painting program" "OFF"
