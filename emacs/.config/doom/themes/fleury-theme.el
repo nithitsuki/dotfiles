@@ -52,7 +52,7 @@
    `(default ((t (:background ,rich-black :foreground ,light-bronze))))
    `(cursor ((t (:background ,fresh-green))))
    `(region ((t (:background ,lime-green))))
-   ;;`(highlight ((t (:background ,charcoal-gray-lite))))
+   `(highlight ((t (:background ,charcoal-gray-lite))))
    `(fringe ((t (:background ,dark-slate))))
    `(vertical-border ((t (:foreground ,dark-slate))))
    `(minibuffer-prompt ((t (:foreground ,amber-gold :weight bold))))

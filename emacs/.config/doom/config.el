@@ -22,7 +22,7 @@
 ;;; ============================================================================
 
 ;; Theme & fonts
-(setq doom-theme 'base16-3024)
+(setq doom-theme 'fleury)
 (setq doom-font (font-spec :family "SF Mono" :size 14)
       doom-variable-pitch-font (font-spec :family "SF Mono" :size 16))
 
@@ -36,7 +36,8 @@
     (set-face-background 'default "unspecified-bg" (selected-frame))
     (set-face-background 'minibuffer "unspecified-bg" (selected-frame))
     (set-face-background 'header-line "unspecified-bg" (selected-frame))))
-(add-hook 'window-setup-hook #'on-after-init)
+;; (add-hook 'window-set
+;;            p-hook #'on-after-init)
 
 ;; Centering / margins
 (use-package! perfect-margin
@@ -300,3 +301,16 @@
 (after! unicode-fonts
   (push "DejaVu Sans Mono" 
         (cadr (assoc "Braille Patterns" unicode-fonts-block-font-mapping))))
+
+(defun on-after-init ()
+  (unless (display-graphic-p (selected-frame))
+    (set-face-background 'default "unspecified-bg" (selected-frame))))
+(add-hook 'window-setup-hook #'on-after-init)
+
+
+;; [[https://stackoverflow.com/questions/19054228/emacs-disable-theme-background-color-in-terminal/33298750#33298750][Emacs: disable theme background color in terminal - Stack Overflow]]
+(defun on-frame-open (&optional frame)
+  "If the FRAME created in terminal don't load background color."
+  (unless (display-graphic-p frame)
+    (set-face-background 'default "unspecified-bg" frame)))
+(add-hook 'after-make-frame-functions #'on-frame-open)

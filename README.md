@@ -35,3 +35,14 @@ ln -s ~/.config/hypr/hyprland_pc.conf ~/.config/hypr/hyprland.conf
 
 > [!NOTE]
 > Install doom emacs to use the emacs config
+
+## Setup a fresh Arch based distro
+> [!CAUTION]
+> ONLY USE THIS ON A FRESH INSTALLATION, IT WILL CAUSE IRREPARABLE DAMAGE TO YOUR SYSTEM IF USED ON AN EXISTING ONE
+
+```bash
+[root@host]# bash <(curl -sL https://raw.githubusercontent.com/nithitsuki/dotfiles/refs/heads/main/setup-fresh-archinstall.sh)
+```
+
+> [!CAUTION]
+> READ THE WARNING ABOVE, THIS WILL CAUSE IRREPARABLE DAMAGE TO YOUR SYSTEM IF USED ON AN EXISTING ONE, YOU HAVE BEEN WARNED
