@@ -107,9 +107,12 @@ fi
 # Array format: "package_name" "Description" "ON/OFF"
 BASE_TOOLS=(
     # --- Shell & Terminal ---
+    "ly" "TUI display manager" "ON"
     "zsh" "Z shell" "ON"
     "zsh-autosuggestions" "Fish-like autosuggestions for zsh" "ON"
+    "zsh-autocomplete" "Intelligent autocomplete for zsh" "ON"
     "zsh-completions" "Additional completion definitions for Zsh" "ON"
+    "zsh-syntax-highlighting" "Syntax highlighting for Zsh" "ON"
     "awesome-terminal-fonts" "Icon fonts for terminals" "ON"
     "tmux" "Terminal multiplexer" "ON"
     
@@ -183,7 +186,6 @@ if [ -z "$SELECTED_BASE" ]; then
 fi
 
 GUI_TOOLS=(
-    "ly" "TUI display manager" "ON"
     "hyprland" "Wayland compositor" "ON"
     "waybar" "Highly customizable Wayland bar" "ON"
     "hyprlauncher" "Application launcher" "ON"
@@ -201,6 +203,7 @@ GUI_TOOLS=(
     "firefox" "Web browser" "ON"
     "discord" "Voice and text chat" "ON"
     "vlc" "Media player" "ON"
+    "pwvucontrol" "(AUR) GUI mixer for PipeWire" "ON"
     "gwenview" "Image viewer" "ON"
     "grim" "Screenshot utility" "ON"
     "zathura" "Minimal document viewer" "ON"
@@ -285,8 +288,9 @@ su - "$TARGET_USER" -c '
 # ==============================================================================
 echo "--> Enabling system services and setting up GPG Agent..."
 
-if [[ $SELECTED_GUI == *"ly"* ]]; then
-    systemctl enable ly.service
+if [[ $SELECTED_BASE == *"ly"* ]]; then
+    systemctl enable ly@tty3.service
+    systemctl disable getty@tty3.service
 fi
 
 if [[ $SELECTED_BASE == *"networkmanager"* ]]; then
