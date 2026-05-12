@@ -126,7 +126,7 @@ BASE_TOOLS=(
     "lsd" "Next-gen ls command" "ON"
     "zip" "Compression utility" "ON"
     "unzip" "Extraction utility" "ON"
-    "7zip" "(yazi dep) File archiver" "ON"
+    "7zip" "File archiver" "ON"
     
     # --- System Monitoring & Info ---
     "fastfetch" "System information fetcher" "ON"
@@ -139,6 +139,8 @@ BASE_TOOLS=(
     "wget" "Network downloader" "ON"
     "net-tools" "Network utilities" "ON"
     "networkmanager" "Network connection manager (incl. nmtui)" "ON"
+    "avahi" "cups doesn't support resolvd, avahi provides mDNS support for local network discovery" "ON"
+    "nss-mdns" "Name Service Switch module for Multicast DNS" "ON"
     "ufw" "Uncomplicated Firewall" "ON"
     
     # --- Git & Development ---
@@ -157,15 +159,17 @@ BASE_TOOLS=(
     "pipewire-jack" "JACK replacement for PipeWire" "ON"
     "wireplumber" "Session / policy manager for PipeWire" "ON"
     "wiremix" "(AUR) Mixer for PipeWire" "ON"
-    "ffmpeg" "(yazi dep) Video processing" "ON"
+    "ffmpeg" " Video processing" "ON"
     
     # --- Utilities & Tools ---
     "bat" "Cat clone with syntax highlighting" "ON"
-    "fzf" "(yazi dep) Fuzzy finder" "ON"
-    "fd" "(yazi dep) Simple fast find" "ON"
-    "ripgrep" "(yazi dep) Blazing fast grep" "ON"
-    "zoxide" "(yazi dep) Smarter cd" "ON"
-    "jq" "(yazi dep) JSON processor" "ON"
+    "devtools" "Development tools" "ON"
+    "arch-install-scripts" "Arch installation scripts (e.g. arch-chroot)" "ON"
+    "fzf" " Fuzzy finder" "ON"
+    "fd" " Simple fast find" "ON"
+    "ripgrep" " Blazing fast grep" "ON"
+    "zoxide" " Smarter cd" "ON"
+    "jq" " JSON processor" "ON"
     "tealdeer" "Community-driven man pages (tldr)" "ON"
     
     # --- Documentation ---
@@ -173,8 +177,8 @@ BASE_TOOLS=(
     "man-pages" "Linux man pages" "ON"
     
     # --- Image & Document Processing ---
-    "imagemagick" "(yazi dep) Image viewing" "ON"
-    "poppler" "(yazi dep) PDF rendering" "ON"
+    "imagemagick" " Image viewing" "ON"
+    "poppler" " PDF rendering" "ON"
     "resvg" "(yazi dep - AUR) SVG rendering" "ON"
 
     # --- Disk & Partition Tools ---
@@ -233,12 +237,22 @@ GUI_TOOLS=(
     "poppler-data" "Additional data files for poppler (e.g. fonts)" "ON"
     "chafa" "Terminal graphics renderer (for fastfetch, yazi, etc)" "ON"
 
+    # --- fonts ---
+    "noto-fonts-cjk" "CJK fonts for Chinese, Japanese, Korean text support" "ON"
+    "apple-fonts" "(AUR) Apple system fonts for macOS compatibility" "ON"
+    "ttf-apple-emoji" "(AUR) Apple-style emoji font" "ON"
+    "ttf-roboto" "Roboto sans-serif font family" "ON"
+    "noto-fonts" "Noto universal font family" "ON"
+    "ttf-liberation" "Liberation fonts (metric-compatible with MS fonts)" "ON"
+    "ttf-dejavu" "DejaVu versatile font family" "ON"
+    "noto-fonts-emoji" "Noto emoji font for colorful emoji support" "ON"
+    "noto-fonts-extra" "Additional Noto fonts and symbols" "ON"
+    "unicode-emoji" "Unicode emoji characters" "ON"
     # --- Optional Additions ---
     "libreoffice-fresh" "Office suite" "OFF"
-    "apple-fonts" "(AUR) Collection of Apple system fonts" "ON"
-    "ttf-apple-emoji" "(AUR) Apple emoji font" "ON"
     "krita" "Digital painting program" "OFF"
     "gimp" "GNU Image Manipulation Program" "OFF"
+    
 )
 
 GUI_MODE=$(whiptail --title "Graphical Environment" --backtitle "$BACKTITLE" \
@@ -291,6 +305,10 @@ su - "$TARGET_USER" -c '
         cd "$HOME/.dotfiles" && bash ./run.sh
     fi
 '
+
+echo "--> Adjusting nsswitch.conf for proper hostname resolution with mDNS and Wayland..."
+sudo sed -i.bak -E 's/^(hosts:.*)dns$/\1mdns4_minimal [NOTFOUND=return] dns/' /etc/nsswitch.conf
+resolvectl flush-caches
 
 # Note: Additional manual symlinking for background and hyprland configs
 # should be evaluated based on the user environment (pc vs laptop)

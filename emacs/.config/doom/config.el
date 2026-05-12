@@ -22,7 +22,7 @@
 ;;; ============================================================================
 
 ;; Theme & fonts
-(setq doom-theme 'fleury)
+(setq doom-theme 'doom-1337)
 (setq doom-font (font-spec :family "SF Mono" :size 14)
       doom-variable-pitch-font (font-spec :family "SF Mono" :size 16))
 
@@ -298,9 +298,7 @@
           (lambda ()
             (setq line-spacing 0)))
 
-(after! unicode-fonts
-  (push "DejaVu Sans Mono" 
-        (cadr (assoc "Braille Patterns" unicode-fonts-block-font-mapping))))
+(setq unicode-fonts-generated-fontset-cache nil unicode-fonts-block-font-mapping nil)
 
 (defun on-after-init ()
   (unless (display-graphic-p (selected-frame))
