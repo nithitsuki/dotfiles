@@ -85,7 +85,7 @@ export NVM_DIR="$HOME/.nvm"
 
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun" # MODIFIED
-
+export PATH="$HOME/.bun/bin:$PATH"
 # >>> juliaup initialize >>>
 # !! Contents within this block are managed by juliaup !!
 path=("$HOME/.juliaup/bin" $path) # MODIFIED
