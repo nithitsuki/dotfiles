@@ -115,6 +115,7 @@ BASE_TOOLS=(
     "zsh-syntax-highlighting" "Syntax highlighting for Zsh" "ON"
     "awesome-terminal-fonts" "Icon fonts for terminals" "ON"
     "tmux" "Terminal multiplexer" "ON"
+    "dysk" "disk free space analyzer" "ON"
     
     # --- Text Editors ---
     "emacs-wayland" "Extensible text editor (Doom dependency)" "ON"
@@ -236,6 +237,7 @@ GUI_TOOLS=(
     "cups" "Printing system" "ON"
     "poppler-data" "Additional data files for poppler (e.g. fonts)" "ON"
     "chafa" "Terminal graphics renderer (for fastfetch, yazi, etc)" "ON"
+    "qdirstat-bin" "(AUR) Qt-based disk usage analyzer" "ON"
 
     # --- fonts ---
     "noto-fonts-cjk" "CJK fonts for Chinese, Japanese, Korean text support" "ON"
