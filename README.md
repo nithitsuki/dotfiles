@@ -16,7 +16,7 @@ cd .dotfiles && bash ./run.sh
 ```bash
 git clone https://github.com/nithitsuki/dotfiles.git .dotfiles
 cd .dotfiles
-stow -t ~ \<package-names\>
+stow -t ~ --dotfiles <package-names>
 # for keyd:
 sudo stow -t / keyd
 ```
@@ -35,6 +35,10 @@ ln -s ~/.config/hypr/hyprland_pc.conf ~/.config/hypr/hyprland.conf
 
 > [!NOTE]
 > Install doom emacs to use the emacs config
+
+## Pi Coding Agent
+
+The `dot-pi` package stows pi's config to `~/.pi/agent/settings.json` (requires `--dotfiles`). See [pi-coding-agent-setup.md](pi-coding-agent-setup.md) for details, pinned packages, and what's deliberately not stowed.
 
 ## Setup a fresh Arch based distro
 > [!CAUTION]

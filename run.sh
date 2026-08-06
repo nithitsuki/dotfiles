@@ -93,8 +93,8 @@ for pkg in "${SELECTED[@]}"; do
 done
 
 if [[ ${#NON_KEYD[@]} -gt 0 ]]; then
-  echo "Dry run (home target): stow -n ${NON_KEYD[*]}"
-  stow -n "${NON_KEYD[@]}"
+  echo "Dry run (home target): stow -n -t ~ --dotfiles ${NON_KEYD[*]}"
+  stow -n -t ~ --dotfiles "${NON_KEYD[@]}"
 fi
 
 if [[ "$DO_KEYD" == true ]]; then
@@ -115,8 +115,8 @@ if [[ ! "$apply" =~ ^[Yy]$ ]]; then
 fi
 
 if [[ ${#NON_KEYD[@]} -gt 0 ]]; then
-  echo "Applying: stow ${NON_KEYD[*]}"
-  stow "${NON_KEYD[@]}"
+  echo "Applying: stow -t ~ --dotfiles ${NON_KEYD[*]}"
+  stow -t ~ --dotfiles "${NON_KEYD[@]}"
 fi
 
 if [[ "$DO_KEYD" == true && "$PLATFORM" == "linux" ]]; then
