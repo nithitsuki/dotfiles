@@ -128,5 +128,5 @@ echo
 echo "Done."
 echo "Next steps:"
 echo "- Ensure ~/.config/background points to your wallpaper file"
-echo "- Set ~/.config/hypr/hyprland.conf to your preferred profile"
+echo "- Set HYPR_PROFILE in ~/.config/hypr/.env (pc or laptop)"
 echo "- Install Doom Emacs if you use the Emacs config"

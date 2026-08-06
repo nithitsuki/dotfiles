@@ -28,10 +28,12 @@ Symlink `~/.config/background` to your wallpaper file
 ln -s /path/to/wallpaper.jpg ~/.config/background
 ```
 
-Symlink `~/.config/hypr/hyprland.conf` to either `hyprland_pc.conf` or `hyprland_laptop.conf`
+Pick the hardware profile by editing the (gitignored) `~/.config/hypr/.env` file:
 ```bash
-ln -s ~/.config/hypr/hyprland_pc.conf ~/.config/hypr/hyprland.conf
+# ~/.config/hypr/.env  (uncommitted, per-machine)
+HYPR_PROFILE=pc      # or: laptop
 ```
+See `hypr/.config/hypr/.env.example` in the repo for a template.
 
 > [!NOTE]
 > Install doom emacs to use the emacs config

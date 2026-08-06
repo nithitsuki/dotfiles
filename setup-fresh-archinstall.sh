@@ -312,9 +312,9 @@ echo "--> Adjusting nsswitch.conf for proper hostname resolution with mDNS and W
 sudo sed -i.bak -E 's/^(hosts:.*)dns$/\1mdns4_minimal [NOTFOUND=return] dns/' /etc/nsswitch.conf
 resolvectl flush-caches
 
-# Note: Additional manual symlinking for background and hyprland configs
-# should be evaluated based on the user environment (pc vs laptop)
-# e.g., ln -s ~/.config/hypr/hyprland_pc.conf ~/.config/hypr/hyprland.conf
+# Note: The hyprland hardware profile (pc vs laptop) is chosen via the
+# gitignored ~/.config/hypr/.env file, e.g.:
+#   HYPR_PROFILE=laptop
 
 # ==============================================================================
 # Services & GPG Agent Setup
