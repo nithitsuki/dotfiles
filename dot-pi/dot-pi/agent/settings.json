@@ -1,10 +1,13 @@
 {
   "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4-flash",
-  "defaultThinkingLevel": "high",
-  "theme": "dark",
-  "hideThinkingBlock": true,
+  "defaultThinkingLevel": "max",
+  "theme": "crimson-noir",
+  "hideThinkingBlock": false,
   "packages": [
-    "npm:pi-subagents"
+    "npm:pi-subagents",
+    "npm:pi-agent-web-access",
+    "npm:pi-ask-user",
+    "npm:awesome-pi-themes"
   ]
 }
