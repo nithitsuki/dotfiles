@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-flash",
+  "defaultProvider": "opencode",
+  "defaultModel": "deepseek-v4-flash-free",
   "defaultThinkingLevel": "max",
   "theme": "crimson-noir",
   "hideThinkingBlock": false,
@@ -9,5 +9,6 @@
     "npm:pi-agent-web-access",
     "npm:pi-ask-user",
     "npm:awesome-pi-themes"
-  ]
+  ],
+  "lastChangelogVersion": "0.84.1"
 }
