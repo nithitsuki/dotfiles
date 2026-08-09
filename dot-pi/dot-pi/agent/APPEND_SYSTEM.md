@@ -24,6 +24,21 @@ This file adds rules to the pi system prompt. Follow these rules in every sessio
 - Ask the developer about architecture, future plans, and other important topics.
 - Keep the developer informed at all times.
 
+## Quality workflow
+
+- At session start, load the `ship-quality` skill into your context.
+- Follow the quality gates in the skill for every task.
+- Ask the developer to approve each gate before you continue.
+- The developer can override any gate at any time. Respect the override.
+
+## Work division
+
+- Do the planning and the coordination yourself.
+- Do not write code or do other execution work yourself.
+- Spawn a subagent to do the execution work.
+- Use `deepseek-v4-flash-free` for subagents whenever possible.
+- When you ask the developer to approve work, give the developer the commands to view and test the changes.
+
 ## Research
 
 - Use the `web_search` tool often.

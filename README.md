@@ -40,7 +40,7 @@ See `hypr/.config/hypr/.env.example` in the repo for a template.
 
 ## Pi Coding Agent
 
-The `dot-pi` package stows pi's config to `~/.pi/agent/settings.json` (requires `--dotfiles`). See [pi-coding-agent-setup.md](pi-coding-agent-setup.md) for details, pinned packages, and what's deliberately not stowed.
+The `dot-pi` package stows pi's config to `~/.pi/agent/settings.json`, the global rules in `~/.pi/agent/APPEND_SYSTEM.md`, and the `ship-quality` workflow skill (requires `--dotfiles`). See [pi-coding-agent-setup.md](pi-coding-agent-setup.md) for details, pinned packages, and what's deliberately not stowed.
 
 ## Setup a fresh Arch based distro
 > [!CAUTION]

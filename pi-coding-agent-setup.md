@@ -65,6 +65,8 @@ gh skill install nithitsuki/asd-ste100-skill asd-ste100 --agent pi --scope user
 
 The `asd-ste100` skill is required: the agent rules in `APPEND_SYSTEM.md` (see below) tell pi to follow it for all documentation.
 
+**`ship-quality`** is different — it ships inside this repo at `dot-pi/dot-pi/agent/skills/ship-quality/` and stows into `~/.pi/agent/skills/` alongside the gh-managed skills (it has no gh metadata, so `gh skill list` / `gh skill update` ignore it — update it via git). The `APPEND_SYSTEM.md` rules tell pi to load it at session start.
+
 Notes:
 
 - `--agent` is **case-sensitive**: use lowercase `pi` (the help shows "Pi (pi)").
@@ -86,7 +88,9 @@ Optional — pi ships a default system prompt. To override it:
 - `~/.pi/agent/APPEND_SYSTEM.md` — **appends** to the default (global)
 - `.pi/SYSTEM.md` / `.pi/APPEND_SYSTEM.md` — per-project variants
 
-This repo ships `dot-pi/dot-pi/agent/APPEND_SYSTEM.md`, which stows to `~/.pi/agent/APPEND_SYSTEM.md`. It contains the global agent rules (bun-only JS tooling, no `uv` for Python, `asd-ste100` for documentation, aggressive `ask_user` / `web_search` use, and subagent review before commit/push). The rules are written in ASD-STE100 Simplified Technical English. Changes take effect on the next pi start.
+This repo ships `dot-pi/dot-pi/agent/APPEND_SYSTEM.md`, which stows to `~/.pi/agent/APPEND_SYSTEM.md`. It contains the global agent rules (bun-only JS tooling, no `uv` for Python, `asd-ste100` for documentation, aggressive `ask_user` / `web_search` use, subagent review before commit/push, and a quality-gate workflow). The rules are written in ASD-STE100 Simplified Technical English. Changes take effect on the next pi start.
+
+The rules require loading the **`ship-quality`** skill at session start. It is a risk-scaled quality-gate workflow (spec approval → plan approval → implementation with proof → independent review → user ship approval → lessons) that keeps the developer in the loop on every task, with a user override at any point. See its `SKILL.md` for the full protocol.
 
 ## Fresh install checklist
 
