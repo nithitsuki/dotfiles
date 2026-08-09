@@ -53,6 +53,7 @@ Skills are **not** stored in this repo — they're installed directly with the G
 gh skill install --agent pi --scope user brycewang-stanford/Auto-Empirical-Research-Skills latex-to-typst
 gh skill install --agent pi --scope user brycewang-stanford/Auto-Empirical-Research-Skills typst-paper
 gh skill install --agent pi --scope user --pin main jihe520/MathModelAgent typst-author
+gh skill install nithitsuki/asd-ste100-skill asd-ste100 --agent pi --scope user
 ```
 
 | Skill | Source repo |
@@ -60,6 +61,9 @@ gh skill install --agent pi --scope user --pin main jihe520/MathModelAgent typst
 | `latex-to-typst` | brycewang-stanford/Auto-Empirical-Research-Skills |
 | `typst-paper` | brycewang-stanford/Auto-Empirical-Research-Skills |
 | `typst-author` | jihe520/MathModelAgent |
+| `asd-ste100` | nithitsuki/asd-ste100-skill |
+
+The `asd-ste100` skill is required: the agent rules in `APPEND_SYSTEM.md` (see below) tell pi to follow it for all documentation.
 
 Notes:
 
@@ -82,7 +86,7 @@ Optional — pi ships a default system prompt. To override it:
 - `~/.pi/agent/APPEND_SYSTEM.md` — **appends** to the default (global)
 - `.pi/SYSTEM.md` / `.pi/APPEND_SYSTEM.md` — per-project variants
 
-If you add either file, it can also live in this `dot-pi` package (`dot-pi/dot-pi/agent/`). Changes take effect on the next pi start.
+This repo ships `dot-pi/dot-pi/agent/APPEND_SYSTEM.md`, which stows to `~/.pi/agent/APPEND_SYSTEM.md`. It contains the global agent rules (bun-only JS tooling, no `uv` for Python, `asd-ste100` for documentation, aggressive `ask_user` / `web_search` use, and subagent review before commit/push). The rules are written in ASD-STE100 Simplified Technical English. Changes take effect on the next pi start.
 
 ## Fresh install checklist
 
@@ -100,4 +104,5 @@ pi /login
 gh skill install --agent pi --scope user brycewang-stanford/Auto-Empirical-Research-Skills latex-to-typst
 gh skill install --agent pi --scope user brycewang-stanford/Auto-Empirical-Research-Skills typst-paper
 gh skill install --agent pi --scope user --pin main jihe520/MathModelAgent typst-author
+gh skill install nithitsuki/asd-ste100-skill asd-ste100 --agent pi --scope user
 ```
