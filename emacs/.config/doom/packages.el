@@ -8,6 +8,7 @@
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;; (package! some-package)
 (package! gptel :recipe (:nonrecursive t))
+(package! leetcode)
 (package! org-bullets)
 (package! org-modern)
 (package! org-roam-ui)

@@ -386,3 +386,14 @@ When CONTEXT is non-nil, prepend it to the prompt."
       (apply orig-fn args))))
 
 (advice-add 'agent-shell--on-request :around #'my/agent-shell--on-request-around)
+
+;;; ============================================================================
+;;; LEETCODE
+;;; ============================================================================
+
+(use-package! leetcode
+  :config
+  (setq leetcode-prefer-language "rust")
+  (setq leetcode-prefer-sql "mysql")
+  (setq leetcode-save-solutions t)
+  (setq leetcode-directory "~/Projects/lc-solves"))
