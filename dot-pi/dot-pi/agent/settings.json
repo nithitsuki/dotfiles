@@ -1,14 +1,22 @@
 {
-  "defaultProvider": "opencode",
-  "defaultModel": "deepseek-v4-flash-free",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "deepseek-v4-flash",
   "defaultThinkingLevel": "max",
   "theme": "crimson-noir",
-  "hideThinkingBlock": false,
+  "hideThinkingBlock": true,
   "packages": [
     "npm:pi-subagents",
     "npm:pi-agent-web-access",
     "npm:pi-ask-user",
     "npm:awesome-pi-themes"
   ],
-  "lastChangelogVersion": "0.84.1"
+  "lastChangelogVersion": "0.84.1",
+  "subagents": {
+    "watchdog": {
+      "enabled": true,
+      "main": {
+        "enabled": true
+      }
+    }
+  }
 }

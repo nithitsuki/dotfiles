@@ -312,3 +312,77 @@
   (unless (display-graphic-p frame)
     (set-face-background 'default "unspecified-bg" frame)))
 (add-hook 'after-make-frame-functions #'on-frame-open)
+
+;; --- agent-shell + pi (pi-acp) integration ---
+(require 'acp)
+(require 'agent-shell)
+(require 'agent-shell-pi)
+(setq agent-shell-pi-acp-command '("pi-acp"))
+(setq agent-shell-preferred-agent-config (agent-shell-pi-make-agent-config))
+
+;; --- agent-shell evil-mode tweaks (from agent-shell README) ---
+(evil-define-key 'insert agent-shell-mode-map (kbd "RET") #'newline)
+(evil-define-key 'normal agent-shell-mode-map (kbd "RET") #'comint-send-input)
+(add-hook 'diff-mode-hook
+          (lambda ()
+            (when (string-match-p "\\*agent-shell-diff\\*" (buffer-name))
+              (evil-emacs-state))))
+
+;; --- agent-shell: ACP elicitation support (pi ask_user freeform answers) ---
+;; pi-acp (patched fork) asks freeform questions via ACP `elicitation/create'
+;; (UNSTABLE protocol feature). Upstream agent-shell does not handle it yet,
+;; so bridge it here: prompt in the minibuffer, respond accept/decline/cancel.
+(defun my/agent-shell--prompt-elicitation-property (name prop-schema &optional context)
+  "Prompt for elicitation property NAME using PROP-SCHEMA.
+When CONTEXT is non-nil, prepend it to the prompt."
+  (let* ((type (map-elt prop-schema 'type))
+         (base (or (map-elt prop-schema 'title) (symbol-name name)))
+         (prompt (format "%s%s: " (if context (concat context " — ") "") base))
+         (enum (map-elt prop-schema 'enum))
+         (default (map-elt prop-schema 'default)))
+    (cond
+     (enum (completing-read prompt enum nil nil nil nil default))
+     ((equal type "boolean") (yes-or-no-p prompt))
+     ((member type '("number" "integer")) (read-number prompt default))
+     ((equal type "array") (read-string prompt (when (and default (listp default))
+                                                 (string-join default ","))))
+     (t (read-string prompt default)))))
+
+(defun my/agent-shell--handle-elicitation (acp-request state)
+  "Handle ACP ELICITATION-REQUEST with STATE via minibuffer prompts."
+  (let* ((params (map-elt acp-request 'params))
+         (mode (map-elt params 'mode))
+         (message (map-elt params 'message))
+         (schema (map-elt params 'requestedSchema))
+         (client (map-elt state :client))
+         (request-id (map-elt acp-request 'id))
+         (respond (lambda (result)
+                    (acp-send-response
+                     :client client
+                     :response (list (cons :request-id request-id)
+                                     (cons :result result))))))
+    (condition-case err
+        (if (not (equal mode "form"))
+            (funcall respond (list (cons 'action "decline")))
+          (let* ((properties (map-elt schema 'properties))
+                 (first (car properties))
+                 (content
+                  (mapcar (lambda (prop-entry)
+                            (cons (car prop-entry)
+                                  (my/agent-shell--prompt-elicitation-property
+                                   (car prop-entry) (cdr prop-entry)
+                                   (and (eq prop-entry first) message))))
+                          properties)))
+            (funcall respond (list (cons 'action "accept")
+                                   (cons 'content content)))))
+      (quit
+       (funcall respond (list (cons 'action "cancel")))))))
+
+(defun my/agent-shell--on-request-around (orig-fn &rest args)
+  "Handle `elicitation/create' requests in ARGS; otherwise call ORIG-FN."
+  (let ((acp-request (plist-get args :acp-request)))
+    (if (equal (map-elt acp-request 'method) "elicitation/create")
+        (my/agent-shell--handle-elicitation acp-request (plist-get args :state))
+      (apply orig-fn args))))
+
+(advice-add 'agent-shell--on-request :around #'my/agent-shell--on-request-around)
