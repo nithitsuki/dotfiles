@@ -1,5 +1,5 @@
 ---
-description: Run a quality workflow with user approval gates for every task. Use at the start of each session and for each task. Covers risk triage, spec approval, plan approval, implementation proof, independent review, ship approval, and lessons.
+description: Run a quality workflow with user approval gates for every task, scaled by risk tier (XXS, XS, S, M, L). Use at the start of each session and for each task. Covers risk triage, spec approval, plan approval, implementation proof, independent review, ship approval, and lessons.
 name: ship-quality
 ---
 
@@ -11,7 +11,7 @@ This skill runs a quality workflow for every task. The workflow has a quality ga
 
 ## When to use this skill
 
-Load this skill at the start of each session. The system prompt requires it. Use it for every task. Do not skip a gate unless the user says to skip it.
+Load this skill at the start of each session. The system prompt requires it. Use it for every task. Do not skip a gate unless the user says to skip it. Exception: for XXS tasks, the skill does not apply. Make the edit directly, with no gates and no subagents.
 
 ## Roles
 
@@ -19,7 +19,7 @@ The agent is the coordinator. The user is the approver. Subagents do the work.
 
 - The coordinator asks the questions and runs the gates.
 - The coordinator does the planning and the coordination.
-- The coordinator does not write code or do other execution work.
+- The coordinator does not write code or do other execution work, except for XS and XXS tasks, where the coordinator does the work directly.
 - A worker subagent writes the code and runs the checks.
 - A reviewer subagent judges the work.
 - Use `deepseek-v4-flash-free` for subagents whenever possible. Pass the model name when you spawn a subagent.
@@ -38,12 +38,16 @@ The agent is the coordinator. The user is the approver. Subagents do the work.
 
 At G0, ask the user to choose a risk level:
 
-- S — trivial change, such as a typo or a doc fix.
+- XXS — The skill does not apply. Preferred for very trivial tasks.
+- XS — a small change with a known shape. No multi-agent: the coordinator writes the code and runs the checks directly. No worker or reviewer subagents.
+- S — trivial change, such as a basic single target goal
 - M — a feature or a moderate change.
 - L — architecture, security, or a breaking change.
 
 Use these gate depths:
 
+- For XXS, run no gates, not even G0. Make the edit directly and show the result.
+- For XS, do G3-lite and G5 directly, without subagents. Skip G1, G2, and G4.
 - For S, do G3-lite and G5. Skip G1, G2, and G4.
 - For M, do all gates.
 - For L, do all gates. Use a different model for the reviewer when possible. Add a rollback plan to the G5 report.
@@ -54,7 +58,7 @@ Ask the user these questions with `ask_user`:
 
 - What is the goal?
 - What does "done" look like?
-- What is the risk level: S, M, or L?
+- What is the risk level: XXS, XS, S, M, or L?
 - What are the constraints and the architecture context?
 - What are the future plans for this area?
 
@@ -87,7 +91,7 @@ Show the plan to the user. Ask the user to approve it with `ask_user`. If the pl
 
 ## G3 — Implementation with proof
 
-Spawn a worker subagent to implement the plan. Give the subagent the spec, the plan, and the checks below. Use `deepseek-v4-flash-free` for the worker whenever possible. The worker implements the plan in small slices. The worker runs the checks after each slice:
+For XS work, the coordinator implements the plan directly. Otherwise, spawn a worker subagent to implement the plan. Give the subagent the spec, the plan, and the checks below. Use `deepseek-v4-flash-free` for the worker whenever possible. The worker implements the plan in small slices. The worker runs the checks after each slice:
 
 - The type check.
 - The linter.
@@ -141,7 +145,7 @@ Commit and push only after approval. Write a commit message that refers to the s
 
 ## G6 — Lessons
 
-After you ship, append to the lessons log at `~/.agents/lessons.md`. Record:
+After you ship, append to the lessons log at `~/.agents/lessons.md` (make sure it is .gitignored).
 
 - What went wrong.
 - What the user corrected.
@@ -163,8 +167,10 @@ Respect the override at once. Do not argue with the user. Note the override in t
 
 ## What not to do
 
+For XXS tasks, none of these rules apply: the skill is ignored.
+
 - Do not implement before G1 approval.
-- Do not write code yourself. Spawn a worker subagent.
+- Do not write code yourself. Spawn a worker subagent, except for XS and XXS tasks.
 - Do not review your own work at G4.
 - Do not commit before G5 approval.
 - Do not claim that a gate passed without proof.

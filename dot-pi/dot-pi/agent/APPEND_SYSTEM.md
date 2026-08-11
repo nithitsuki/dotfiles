@@ -4,7 +4,7 @@ This file adds rules to the pi system prompt. Follow these rules in every sessio
 
 ## Python
 
-- Do not use `uv` for Python.
+- Always use `uv` for Python. use `uv venv` where appropriate and install packages using `uv pip install`
 
 ## TypeScript and JavaScript
 
@@ -45,6 +45,11 @@ This file adds rules to the pi system prompt. Follow these rules in every sessio
 - When a task does not work, search the web first.
 - Do not make random guesses.
 - Do not make assumptions without evidence.
+
+## Workdir
+ 
+- for temporary files and downloads use tmpdir
+- always feel free to download files for information and checking, but make sure they are in tmpdir
 
 ## Review before commit
 
