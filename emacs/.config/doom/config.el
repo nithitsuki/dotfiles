@@ -242,6 +242,19 @@
 ;;; AI / LLM
 ;;; ============================================================================
 
+;; Shared API key for OpenCode Zen/Go (https://opencode.ai/docs/zen/):
+;; OPENCODE_API_KEY env var first, falling back to the credential store the
+;; opencode CLI itself uses (~/.config/opencode/service.json, "password" field).
+(defun my/gptel-opencode-api-key ()
+  "Return the OpenCode Zen/Go API key for gptel requests."
+  (require (quote json))
+  (let ((env-key (getenv "OPENCODE_API_KEY")))
+    (or (and env-key (not (string-empty-p env-key)) env-key)
+        (when-let* ((file (expand-file-name "~/.config/opencode/service.json"))
+                    (json (ignore-errors (json-read-file file))))
+          (or (map-elt json 'password)
+              (map-elt json "password"))))))
+
 (use-package! gptel
   :config
   (setq! gptel-api-key (getenv "OPENAI_API_KEY"))
@@ -250,28 +263,39 @@
     :key (getenv "CLAUDE_KEY"))
   (gptel-make-gh-copilot "Copilot")
   ;; OpenCode Go subscription (https://opencode.ai/docs/go/)
-  ;; OpenAI-compatible endpoint. Key comes from the OPENCODE_API_KEY env var,
-  ;; falling back to the credential store the opencode CLI itself uses.
-  ;; gpt-5.6-luna (responses API) and the Qwen/MiniMax models
-  ;; (Anthropic-format endpoint) are not registered here.
+  ;; OpenAI-compatible endpoint. gpt-5.6-luna (responses API) and the
+  ;; Qwen/MiniMax models (Anthropic-format endpoint) are not registered here.
   (gptel-make-openai "OpenCode Go"
     :host "opencode.ai"
     :endpoint "/zen/go/v1/chat/completions"
     :stream t
-    :key (lambda ()
-           (require (quote json))
-           (let ((env-key (getenv "OPENCODE_API_KEY")))
-             (or (and env-key (not (string-empty-p env-key)) env-key)
-                 (when-let* ((file (expand-file-name "~/.config/opencode/service.json"))
-                             (json (ignore-errors (json-read-file file))))
-                   (or (map-elt json 'password)
-                       (map-elt json "password"))))))
+    :key #'my/gptel-opencode-api-key
     :models '(grok-4.5
               glm-5.2 glm-5.1
               kimi-k3 kimi-k2.7-code kimi-k2.6
               deepseek-v4-pro deepseek-v4-flash
               mimo-v2.5 mimo-v2.5-pro
-              hy3)))
+              hy3))
+  ;; OpenCode Zen - pay-per-use gateway (https://opencode.ai/docs/zen/),
+  ;; same key as Go. Paid models bill against the Zen balance (requests fail
+  ;; with a 401 auth error until credits are added); the free models
+  ;; (deepseek-v4-flash-free, mimo-v2.5-free, ...) are free but their data may
+  ;; be used for model training. Deprecated (glm-5, kimi-k2.5, minimax-m2.5)
+  ;; and non-chat-completions models (GPT/Grok responses API, Claude/Qwen/
+  ;; Gemini messages API) are not registered here.
+  (gptel-make-openai "Zen"
+    :host "opencode.ai"
+    :endpoint "/zen/v1/chat/completions"
+    :stream t
+    :key #'my/gptel-opencode-api-key
+    :models '(deepseek-v4-pro deepseek-v4-flash
+              minimax-m3 minimax-m2.7
+              glm-5.2 glm-5.1
+              kimi-k3 kimi-k2.7-code kimi-k2.6
+              big-pickle
+              deepseek-v4-flash-free mimo-v2.5-free
+              laguna-s-2.1-free ling-3.0-tiny-free
+              longcat-2.0-free north-mini-code-free nemotron-3-ultra-free)))
 ;;(setq doom-emoji-font (font-spec :family "Segoe UI Emoji"))
 
 ;;;;
