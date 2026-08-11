@@ -47,7 +47,14 @@ These live in `~/.pi/agent/` but stay local to the machine:
 
 ## Skills (user scope)
 
-Skills are **not** stored in this repo — they're installed directly with the GitHub CLI (`gh skill install`) into `~/.pi/agent/skills/` (real directory, gh-managed). Run these during pi setup:
+Skills are **not** stored in this repo. Two tools install them into `~/.pi/agent/skills/` (real directory, not stowed):
+
+- The GitHub CLI (`gh skill install`)
+- The skills CLI (`bunx skills add`)
+
+### Via the GitHub CLI
+
+Run these during pi setup:
 
 ```bash
 gh skill install --agent pi --scope user brycewang-stanford/Auto-Empirical-Research-Skills latex-to-typst
@@ -62,6 +69,20 @@ gh skill install nithitsuki/asd-ste100-skill asd-ste100 --agent pi --scope user
 | `typst-paper` | brycewang-stanford/Auto-Empirical-Research-Skills |
 | `typst-author` | jihe520/MathModelAgent |
 | `asd-ste100` | nithitsuki/asd-ste100-skill |
+
+### Via the skills CLI
+
+The skills CLI is the package manager for the open agent skills ecosystem ([skills.sh](https://skills.sh)). It copies the skill into `~/.pi/agent/skills/`. Run this during pi setup:
+
+```bash
+bunx skills add https://github.com/anthropics/skills --skill skill-creator --agent pi --global --copy --yes
+```
+
+| Skill | Source repo |
+| --- | --- |
+| `skill-creator` | anthropics/skills |
+
+The `skill-creator` skill creates new skills and improves existing skills. It runs evals and benchmarks to measure skill performance. Update it with `bunx skills update skill-creator --global`.
 
 The `asd-ste100` skill is required: the agent rules in `APPEND_SYSTEM.md` (see below) tell pi to follow it for all documentation.
 
@@ -109,4 +130,5 @@ gh skill install --agent pi --scope user brycewang-stanford/Auto-Empirical-Resea
 gh skill install --agent pi --scope user brycewang-stanford/Auto-Empirical-Research-Skills typst-paper
 gh skill install --agent pi --scope user --pin main jihe520/MathModelAgent typst-author
 gh skill install nithitsuki/asd-ste100-skill asd-ste100 --agent pi --scope user
+bunx skills add https://github.com/anthropics/skills --skill skill-creator --agent pi --global --copy --yes
 ```
