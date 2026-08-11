@@ -243,13 +243,21 @@
 ;;; ============================================================================
 
 ;; Shared API key for OpenCode Zen/Go (https://opencode.ai/docs/zen/):
-;; OPENCODE_API_KEY env var first, falling back to the credential store the
-;; opencode CLI itself uses (~/.config/opencode/service.json, "password" field).
+;; OPENCODE_API_KEY env var first, then the credential the opencode CLI itself
+;; uses (~/.local/share/opencode/auth.json), then the legacy credential store
+;; (~/.config/opencode/service.json, "password" field).
 (defun my/gptel-opencode-api-key ()
   "Return the OpenCode Zen/Go API key for gptel requests."
   (require (quote json))
   (let ((env-key (getenv "OPENCODE_API_KEY")))
     (or (and env-key (not (string-empty-p env-key)) env-key)
+        (when-let* ((file (expand-file-name "~/.local/share/opencode/auth.json"))
+                    (json (ignore-errors (json-read-file file)))
+                    (entry (or (map-elt json 'opencode-go)
+                               (map-elt json "opencode-go")))
+                    (key (or (map-elt entry 'key)
+                             (map-elt entry "key"))))
+          (and key (not (string-empty-p key)) key))
         (when-let* ((file (expand-file-name "~/.config/opencode/service.json"))
                     (json (ignore-errors (json-read-file file))))
           (or (map-elt json 'password)

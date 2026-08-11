@@ -1,2 +1,4 @@
 hypr/.config/hypr/hyprland.conf
 hypr/.config/hypr/.env
+.env
+.pi-subagents/
