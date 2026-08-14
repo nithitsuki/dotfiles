@@ -450,3 +450,6 @@ hl.config({
         force_zero_scaling = false,
     },
 })
+
+-- hyprmon: managed monitor profile include
+require("hyprmon")

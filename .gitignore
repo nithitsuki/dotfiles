@@ -1,4 +1,6 @@
 hypr/.config/hypr/hyprland.conf
 hypr/.config/hypr/.env
+# timestamped backups written by hyprmon next to hyprland.lua
+*.bak.*
 .env
 .pi-subagents/
