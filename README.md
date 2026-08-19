@@ -38,9 +38,9 @@ See `hypr/.config/hypr/.env.example` in the repo for a template.
 > [!NOTE]
 > Install doom emacs to use the emacs config
 
-## Pi Coding Agent
+## Coding Agents
 
-The `dot-pi` package stows pi's config to `~/.pi/agent/settings.json`, the global rules in `~/.pi/agent/APPEND_SYSTEM.md`, and the `ship-quality` workflow skill (requires `--dotfiles`). See [pi-coding-agent-setup.md](pi-coding-agent-setup.md) for details, pinned packages, and what's deliberately not stowed.
+The `dot-pi` package stows pi's config to `~/.pi/agent/settings.json`, the global rules in `~/.pi/agent/APPEND_SYSTEM.md`, and the `ship-quality` workflow skill (requires `--dotfiles`). opencode's config lives in `~/.config/opencode/` and is **not** stowed (it holds secrets — see below). See [coding-agent-setup.md](coding-agent-setup.md) for details, pinned packages, the project-skills loading rule, and what's deliberately not stowed.
 
 ## Setup a fresh Arch based distro
 > [!CAUTION]

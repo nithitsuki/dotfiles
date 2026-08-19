@@ -17,6 +17,24 @@ This file adds rules to the pi system prompt. Follow these rules in every sessio
 - Load the skill at least once in each session.
 - Follow the rules of the skill in all documentation you write.
 
+## Project skills
+
+- When you start work on a project, identify its stack and architecture.
+- Load the skills that match the stack into your context. Do not start work until you load them.
+- Examples: typst, go, rust, cloudflare, and other stack skills.
+- If a matching skill is not installed, install it globally first.
+- Use `gh skill install` or `bunx skills add` for the install.
+- Only install skills from repositories with at least 1000 GitHub stars.
+- Check the star count before you install a skill.
+
+## Stack tools
+
+- For each technology in the project stack, find the official tooling.
+- Search for the official skills and the official MCP server for each technology.
+- Example: for Supabase, use the official Supabase skill and the official Supabase MCP server.
+- If the technology provides an official MCP server, prefer it over hand-rolled API calls.
+- Do not write workarounds when official tooling exists.
+
 ## Questions
 
 - Use the `ask_user` tool often.
@@ -41,10 +59,15 @@ This file adds rules to the pi system prompt. Follow these rules in every sessio
 
 ## Research
 
-- Use the `web_search` tool often.
+- Use the `web_search` tool often and aggressively.
+- Search the web like a normal programmer before you write any code.
+- Look for an existing solution, library, skill, or MCP server before you build your own.
+- Finding a working solution is always better than brute-forcing your own.
 - When a task does not work, search the web first.
 - Do not make random guesses.
 - Do not make assumptions without evidence.
+- Search for the exact error message, the exact feature, and the exact API you need.
+- Do not rely on memory for APIs or tool names. Verify with the web.
 
 ## Workdir
  
