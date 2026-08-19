@@ -51,7 +51,7 @@ pi ships a default system prompt that you can override:
 - `~/.pi/agent/APPEND_SYSTEM.md` — **appends** to the default (global)
 - `.pi/SYSTEM.md` / `.pi/APPEND_SYSTEM.md` — per-project variants
 
-This repo ships `dot-pi/dot-pi/agent/APPEND_SYSTEM.md`, which stows to `~/.pi/agent/APPEND_SYSTEM.md`. It contains the global agent rules (bun-only JS tooling, no `uv` for Python, `asd-ste100` for documentation, aggressive `ask_user` / `web_search` use, subagent review before commit/push, a quality-gate workflow, the project-skills loading rule, and the stack-tools rule to find official skills and MCP servers for each technology — e.g. Supabase). The rules are written in ASD-STE100 Simplified Technical English. Changes take effect on the next pi start.
+This repo ships `dot-pi/dot-pi/agent/APPEND_SYSTEM.md`, which stows to `~/.pi/agent/APPEND_SYSTEM.md`. It contains the global agent rules (bun-only JS tooling, "Always use `uv` for Python", `fd`/`rg` for search instead of `find`/`grep` with command outputs saved to files, `asd-ste100` for documentation, aggressive `ask_user` / `web_search` use, subagent review before commit/push, a quality-gate workflow, the project-skills loading rule, and the stack-tools rule to find official skills and MCP servers for each technology — e.g. Supabase). The rules are written in ASD-STE100 Simplified Technical English. Changes take effect on the next pi start.
 
 The same rules apply to opencode via `~/.config/opencode/instructions/agent-rules.md` (registered in `opencode.jsonc` under `instructions`), adapted to opencode's tools (`ask`, `webfetch`, `/tmp/opencode`, `general` subagents). Keep the two rule files in sync.
 

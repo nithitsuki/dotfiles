@@ -11,6 +11,14 @@ This file adds rules to the pi system prompt. Follow these rules in every sessio
 - Use only the `bun` ecosystem for TypeScript and JavaScript.
 - Do not use `node`, `npm`, `npx`, or other Node.js tools.
 
+## Search
+
+- Use `fd` instead of `find`.
+- Use `rg` instead of `grep`.
+- Save command output to a file when you search or inspect large data.
+- Re-run `rg` on the saved file when you need another pattern.
+- Do not re-run a command just to change the search pattern.
+
 ## Documentation
 
 - When you write documentation, load the `asd-ste100` skill into your context.
