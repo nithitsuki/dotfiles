@@ -10,7 +10,7 @@
     "npm:pi-ask-user",
     "npm:awesome-pi-themes"
   ],
-  "lastChangelogVersion": "0.84.2",
+  "lastChangelogVersion": "0.84.3",
   "subagents": {
     "watchdog": {
       "enabled": true,
