@@ -366,6 +366,10 @@
     (set-face-background 'default "unspecified-bg" frame)))
 (add-hook 'after-make-frame-functions #'on-frame-open)
 
+;; bun's global bin dir holds pi-acp, pi, and opencode2 — make sure it is on
+;; exec-path even when DOOM was launched without the full login PATH.
+(add-to-list 'exec-path (expand-file-name "~/.bun/bin"))
+
 ;; --- agent-shell + agent ACP integrations (pi / opencode / opencode2) ---
 (require 'acp)
 (require 'agent-shell)
