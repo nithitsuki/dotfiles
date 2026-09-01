@@ -265,7 +265,8 @@
 
 (use-package! gptel
   :config
-  (setq! gptel-api-key (getenv "OPENAI_API_KEY"))
+  (when-let (env-key (getenv "OPENAI_API_KEY"))
+    (setq! gptel-api-key env-key))
   (gptel-make-anthropic "Personal Claude"
     :stream t
     :key (getenv "CLAUDE_KEY"))
@@ -337,19 +338,16 @@
                    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⠋⠀⠀⠀⠀⠀⠀⠀⣸⠁⠸⣿⣷⠀⠀⠉⠙⠓⠒⠒⠳⣟⠶⣖⠋⠉⢀⣴⣿⠿⢭⣷⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
                    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣰⠟⠁⠀⠀⠀⠀⠀⠀⠀⢠⠇⠀⠀⢻⣿⡄⠀⠀⠀⠀⠀⣀⣴⣿⣷⣮⣙⣶⣿⠟⠁⠀⠀⢸⠈⠛⡶⠤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀"))
          (longest-line (apply #'max (mapcar #'length banner))))
-    (insert 
-     (propertize
-      (mapconcat (lambda (line)
-                   (+doom-dashboard--center
-                    +doom-dashboard--width
-                    (concat line (make-string (max 0 (- longest-line (length line))) 64))))
-                 banner "\n")
-      'face 'doom-dashboard-banner
-      'line-height 0.8))))
+    (propertize
+     (mapconcat (lambda (line)
+                  (concat line (make-string (max 0 (- longest-line (length line))) 64)))
+                banner "\n")
+     'face '+dashboard-banner
+     'line-height 0.8)))
 
-(setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater) 
+(setq +dashboard-ascii-banner-fn #'my-weebery-is-always-greater) 
 
-(add-hook '+doom-dashboard-mode-hook
+(add-hook '+dashboard-mode-hook
           (lambda ()
             (setq line-spacing 0)))
 
