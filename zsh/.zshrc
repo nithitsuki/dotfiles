@@ -91,6 +91,7 @@ export PATH="$HOME/.bun/bin:$PATH"
 export ANDROID_HOME=/opt/android-sdk
 export ANDROID_SDK_ROOT=/opt/android-sdk
 export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+export PATH=$PATH:$HOME/.maestro/bin
 # >>> juliaup initialize >>>
 # !! Contents within this block are managed by juliaup !!
 path=("$HOME/.juliaup/bin" $path) # MODIFIED

@@ -1,7 +1,7 @@
 {
   "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-flash",
-  "defaultThinkingLevel": "max",
+  "defaultModel": "hy3",
+  "defaultThinkingLevel": "high",
   "theme": "crimson-noir",
   "hideThinkingBlock": false,
   "packages": [

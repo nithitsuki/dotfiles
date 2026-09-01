@@ -91,22 +91,29 @@ These live under `~/.pi/agent/` and `~/.config/opencode/` but stay local to the 
 
 ## Skills (user scope)
 
-Skills are **not** stored in this repo. Two harness-agnostic tools install them into each agent's global skills directory (e.g. `~/.pi/agent/skills/` for pi, `~/.agents/skills/` for opencode — real directories, not stowed):
+Skills are **not** stored in this repo. Two harness-agnostic tools install them into the **single global skills directory `~/.agents/skills/`** — the open agent skills location used by opencode and **auto-discovered by pi**. Skills live there as real directories, not stowed:
 
 - The GitHub CLI (`gh skill install`)
 - The skills CLI (`bunx skills add`)
 
-Both take an `--agent` flag; `bunx skills add` accepts it repeatably (pass it once per target harness).
+Both take an `--agent` flag. Point them at `opencode`: it targets the shared `~/.agents/skills/` directory that pi also auto-discovers (see the warning below) — do not pass `--agent pi` too.
+
+**One global location — do not duplicate into `~/.pi/agent/skills`.** pi auto-discovers `~/.agents/skills`, so a skill installed there is available to pi and opencode alike. Install with `--agent opencode` (which targets `~/.agents/skills`) and **do not also pass `--agent pi`**: that writes a second copy into `~/.pi/agent/skills`, and because pi loads `~/.pi/agent/skills` *before* `~/.agents/skills`, the duplicate shadows the global copy and pi logs a name-collision (`✗ ~/.agents/skills/<name>/SKILL.md (skipped)`). The `~/.pi/agent/skills` directory must contain **only symlinks** to `~/.agents/skills` entries (plus `ship-quality`, which ships via stow). If a skill is wrongly present as a real directory in both places, replace the `~/.pi` copy with a symlink so both paths resolve to the same file:
+
+```bash
+rm -rf ~/.pi/agent/skills/<name>
+ln -s ../../../.agents/skills/<name> ~/.pi/agent/skills/<name>
+```
 
 ### Via the GitHub CLI
 
 Run these during setup:
 
 ```bash
-gh skill install --agent pi --agent opencode --scope user brycewang-stanford/Auto-Empirical-Research-Skills latex-to-typst
-gh skill install --agent pi --agent opencode --scope user brycewang-stanford/Auto-Empirical-Research-Skills typst-paper
-gh skill install --agent pi --agent opencode --scope user --pin main jihe520/MathModelAgent typst-author
-gh skill install --agent pi --agent opencode --scope user nithitsuki/asd-ste100-skill asd-ste100
+gh skill install --agent opencode --scope user brycewang-stanford/Auto-Empirical-Research-Skills latex-to-typst
+gh skill install --agent opencode --scope user brycewang-stanford/Auto-Empirical-Research-Skills typst-paper
+gh skill install --agent opencode --scope user --pin main jihe520/MathModelAgent typst-author
+gh skill install --agent opencode --scope user nithitsuki/asd-ste100-skill asd-ste100
 ```
 
 | Skill | Source repo |
@@ -121,11 +128,11 @@ gh skill install --agent pi --agent opencode --scope user nithitsuki/asd-ste100-
 The skills CLI is the package manager for the open agent skills ecosystem ([skills.sh](https://skills.sh)). It copies each skill into the target agent's global skills directory. Run this during setup:
 
 ```bash
-bunx skills add https://github.com/anthropics/skills --skill skill-creator --agent opencode --agent pi --global --copy --yes
-bunx skills add https://github.com/mattpocock/skills --skill '*' --agent opencode --agent pi --global --copy --yes
+bunx skills add https://github.com/anthropics/skills --skill skill-creator --agent opencode --global --copy --yes
+bunx skills add https://github.com/mattpocock/skills --skill '*' --agent opencode --global --copy --yes
 ```
 
-The `--agent` flag is repeatable: pass it once per target agent.
+Pass `--agent opencode` only — do not add `--agent pi` (see the warning above), or you write a duplicate copy into `~/.pi/agent/skills`.
 
 | Skill | Source repo | Purpose |
 | --- | --- | --- |
@@ -135,7 +142,7 @@ Update `skill-creator` with `bunx skills update skill-creator --global`.
 
 #### Matt Pocock's skills (mattpocock/skills)
 
-The second command installs all 35 skills from [mattpocock/skills](https://github.com/mattpocock/skills). It copies them into `~/.agents/skills/` (opencode) and `~/.pi/agent/skills/` (pi). `--copy` copies the files. It does not create symlinks into caches. The CLI registers the skills for all supported agents in `~/.agents/.skill-lock.json`, but only the agents passed with `--agent` receive the files.
+The second command installs all 35 skills from [mattpocock/skills](https://github.com/mattpocock/skills). `--copy` copies the files into the global `~/.agents/skills/` directory, which both opencode and pi read. It does not create symlinks into caches. The CLI registers the skills for all supported agents in `~/.agents/.skill-lock.json`, but only the agents passed with `--agent` receive the files. Pass `--agent opencode` only — do not add `--agent pi`, or you create a duplicate `~/.pi/agent/skills` copy that collides with (and shadows) the global one.
 
 **Engineering skills** — these read and write the repo's issue tracker and domain docs. Run `setup-matt-pocock-skills` in each repo before you use them:
 
@@ -190,11 +197,11 @@ The `asd-ste100` skill is required: the agent rules in `APPEND_SYSTEM.md` (see a
 
 Notes:
 
-- `--agent` is **case-sensitive**: use lowercase `pi` (the help shows "Pi (pi)").
+- `--agent` is **case-sensitive**: use lowercase `opencode`.
 - `typst-author` needs `--pin main`: the repo's only release tag `v0.0.1` predates its `skills/` directory, so the default install finds nothing.
 - **Security:** gh warns that skills may contain prompt injections or malicious scripts. Review `SKILL.md` contents (and any scripts) after installing or updating.
 - To update installed skills: `gh skill update --all`.
-- User-scope skills install to each agent's real skills directory here — do not add them to the `dot-pi` stow package.
+- User-scope skills install to the shared `~/.agents/skills/` directory here — do not add them to the `dot-pi` stow package.
 
 ## Project skills loading
 
@@ -205,11 +212,11 @@ Rule for **every** agent and **every** project session:
 > 3. **If a matching skill is missing, install it globally first.** Do not continue until the install succeeds:
 >
 >    ```bash
->    # via the GitHub CLI (install for every harness you use)
->    gh skill install --agent pi --agent opencode --scope user <owner>/<repo> <skill>
+>    # via the GitHub CLI (install into the global ~/.agents/skills/, read by pi + opencode)
+>    gh skill install --agent opencode --scope user <owner>/<repo> <skill>
 >
 >    # via the skills CLI
->    bunx skills add <https://github.com/owner/repo> --skill <skill> --agent opencode --agent pi --global --copy --yes
+>    bunx skills add <https://github.com/owner/repo> --skill <skill> --agent opencode --global --copy --yes
 >    ```
 > 4. **Star threshold.** Only install skills from repositories with **at least 1,000 GitHub stars**. Check the star count first with `gh repo view <owner>/<repo> --json stargazerCount` and skip the repo if it does not meet the threshold. (Exception: this repo's own in-house skills, which ship via `dot-pi`.)
 > 5. **Prefer this repo's pinned skills** (`typst-author`, `latex-to-typst`, `typst-paper`, `asd-ste100`, the mattpocock engineering skills, and the rust-skills family) when they cover the stack — do not install duplicates.
@@ -235,10 +242,10 @@ pi update --all
 pi /login
 
 # 4. user-scope skills (see "Skills" section above)
-gh skill install --agent pi --agent opencode --scope user brycewang-stanford/Auto-Empirical-Research-Skills latex-to-typst
-gh skill install --agent pi --agent opencode --scope user brycewang-stanford/Auto-Empirical-Research-Skills typst-paper
-gh skill install --agent pi --agent opencode --scope user --pin main jihe520/MathModelAgent typst-author
-gh skill install --agent pi --agent opencode --scope user nithitsuki/asd-ste100-skill asd-ste100
-bunx skills add https://github.com/anthropics/skills --skill skill-creator --agent opencode --agent pi --global --copy --yes
-bunx skills add https://github.com/mattpocock/skills --skill '*' --agent opencode --agent pi --global --copy --yes
+gh skill install --agent opencode --scope user brycewang-stanford/Auto-Empirical-Research-Skills latex-to-typst
+gh skill install --agent opencode --scope user brycewang-stanford/Auto-Empirical-Research-Skills typst-paper
+gh skill install --agent opencode --scope user --pin main jihe520/MathModelAgent typst-author
+gh skill install --agent opencode --scope user nithitsuki/asd-ste100-skill asd-ste100
+bunx skills add https://github.com/anthropics/skills --skill skill-creator --agent opencode --global --copy --yes
+bunx skills add https://github.com/mattpocock/skills --skill '*' --agent opencode --global --copy --yes
 ```
