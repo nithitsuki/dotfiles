@@ -366,12 +366,55 @@
     (set-face-background 'default "unspecified-bg" frame)))
 (add-hook 'after-make-frame-functions #'on-frame-open)
 
-;; --- agent-shell + pi (pi-acp) integration ---
+;; --- agent-shell + agent ACP integrations (pi / opencode / opencode2) ---
 (require 'acp)
 (require 'agent-shell)
 (require 'agent-shell-pi)
+(require 'agent-shell-opencode)
+
+;; pi — via the pi-acp ACP adapter (spawns `pi --mode rpc'). Install with:
+;;   bun add -g pi-acp
 (setq agent-shell-pi-acp-command '("pi-acp"))
-(setq agent-shell-preferred-agent-config (agent-shell-pi-make-agent-config))
+
+;; opencode (classic, /usr/sbin/opencode) — built-in ACP server.
+(setq agent-shell-opencode-acp-command '("opencode" "acp"))
+
+;; opencode2 (beta, ~/.bun/bin/opencode2) — built-in ACP server.
+;; A distinct config so it can coexist with `opencode'.
+(defun my/agent-shell-opencode2-make-agent-config ()
+  "Create an OpenCode2 (beta) agent configuration for agent-shell."
+  (agent-shell-make-agent-config
+   :identifier 'opencode2
+   :mode-line-name "OpenCode2"
+   :buffer-name "OpenCode2"
+   :shell-prompt "OpenCode2> "
+   :shell-prompt-regexp "OpenCode2> "
+   :welcome-function #'agent-shell-opencode--welcome-message
+   :icon-name "opencode.png"
+   :client-maker (lambda (buffer)
+                   (agent-shell--make-acp-client
+                    :command "opencode2"
+                    :command-params '("acp")
+                    :environment-variables nil
+                    :context-buffer buffer))
+   :install-instructions "Install opencode2 with: bun add -g @opencode-ai/cli"))
+
+;;;###autoload
+(defun my/agent-shell-opencode2-start-agent ()
+  "Start an interactive OpenCode2 agent shell."
+  (interactive)
+  (agent-shell--dwim :config (my/agent-shell-opencode2-make-agent-config)
+                     :new-shell t))
+
+;; Restrict the agent picker to this repo's three integrated agents.
+(setq agent-shell-agent-configs
+      (list #'agent-shell-pi-make-agent-config
+            #'agent-shell-opencode-make-agent-config
+            #'my/agent-shell-opencode2-make-agent-config))
+
+;; Default to pi, but keep the picker so opencode / opencode2 can be
+;; chosen per shell.  For an unconditional pi default use `'pi' instead.
+(setq agent-shell-preferred-agent-config '(preselect . pi))
 
 ;; --- agent-shell evil-mode tweaks (from agent-shell README) ---
 (evil-define-key 'insert agent-shell-mode-map (kbd "RET") #'newline)
@@ -382,7 +425,7 @@
               (evil-emacs-state))))
 
 ;; --- agent-shell: ACP elicitation support (pi ask_user freeform answers) ---
-;; pi-acp (patched fork) asks freeform questions via ACP `elicitation/create'
+;; pi-acp asks freeform questions via ACP `elicitation/create'
 ;; (UNSTABLE protocol feature). Upstream agent-shell does not handle it yet,
 ;; so bridge it here: prompt in the minibuffer, respond accept/decline/cancel.
 (defun my/agent-shell--prompt-elicitation-property (name prop-schema &optional context)
