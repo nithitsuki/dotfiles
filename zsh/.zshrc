@@ -1,5 +1,5 @@
 # Luke's config for the Zoomer Shell
-export PATH="$PATH:$HOME/.local/bin" # MODIFIED
+export PATH="$PATH:$HOME/.local/bin:$HOME/.opencode/bin" # MODIFIED
 export PATH="$HOME/.bun/bin:$PATH"
 # Enable colors and change prompt:
 autoload -U colors && colors
@@ -103,6 +103,8 @@ export COLORTERM=truecolor
 export GPG_TTY=$(tty)
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 gpg-connect-agent updatestartuptty /bye > /dev/null
+export PATH=$PATH:/opt/rtems/7/bin
+export PATH="$HOME/.opencode/bin:$PATH"
 
 # Load zsh-syntax-highlighting; should be last.
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
