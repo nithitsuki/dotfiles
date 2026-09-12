@@ -100,9 +100,16 @@ export PATH
 
 export COLORTERM=truecolor
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
-export GPG_TTY=$(tty)
-export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
-gpg-connect-agent updatestartuptty /bye > /dev/null
+# GPG agent + SSH support (robust without systemd, e.g. Alpine/containers)
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+[ -d "$HOME/.gnupg" ] || mkdir -p "$HOME/.gnupg"
+chmod 700 "$HOME/.gnupg" 2>/dev/null
+export GPG_TTY=$(tty 2>/dev/null || echo "${TTY:-}")
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket 2>/dev/null)
+if [ -n "$SSH_AUTH_SOCK" ] && [ ! -S "$SSH_AUTH_SOCK" ]; then
+  gpg-agent --daemon --enable-ssh-support >/dev/null 2>&1
+fi
+gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 export PATH=$PATH:/opt/rtems/7/bin
 export PATH="$HOME/.opencode/bin:$PATH"
 
