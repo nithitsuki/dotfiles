@@ -22,7 +22,7 @@ The agent is the coordinator. The user is the approver. Subagents do the work.
 - The coordinator does not write code or do other execution work, except for XS and XXS tasks, where the coordinator does the work directly.
 - A worker subagent writes the code and runs the checks.
 - A reviewer subagent judges the work.
-- Use `deepseek-v4-flash-free` for subagents whenever possible. Pass the model name when you spawn a subagent.
+- Use `muse-spark-1.3-contributor-free` for subagents whenever possible. Pass the model name when you spawn a subagent.
 
 ## The gates
 
@@ -91,7 +91,7 @@ Show the plan to the user. Ask the user to approve it with `ask_user`. If the pl
 
 ## G3 — Implementation with proof
 
-For XS work, the coordinator implements the plan directly. Otherwise, spawn a worker subagent to implement the plan. Give the subagent the spec, the plan, and the checks below. Use `deepseek-v4-flash-free` for the worker whenever possible. The worker implements the plan in small slices. The worker runs the checks after each slice:
+For XS work, the coordinator implements the plan directly. Otherwise, spawn a worker subagent to implement the plan. Give the subagent the spec, the plan, and the checks below. Use `muse-spark-1.3-contributor-free` for the worker whenever possible. The worker implements the plan in small slices. The worker runs the checks after each slice:
 
 - The type check.
 - The linter.
@@ -105,7 +105,7 @@ The worker reports the commands and their outputs. The coordinator records the p
 
 ## G4 — Independent review
 
-Spawn a reviewer subagent with fresh context. Use `deepseek-v4-flash-free` for the reviewer whenever possible. For L work, use a different model when possible. The reviewer judges the work. The author does not judge the work.
+Spawn a reviewer subagent with fresh context. Use `muse-spark-1.3-contributor-free` for the reviewer whenever possible. For L work, use a different model when possible. The reviewer judges the work. The author does not judge the work.
 
 The reviewer checks the diff against:
 

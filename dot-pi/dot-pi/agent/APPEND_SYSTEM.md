@@ -62,7 +62,7 @@ This file adds rules to the pi system prompt. Follow these rules in every sessio
 - Do the planning and the coordination yourself.
 - Do not write code or do other execution work yourself.
 - Spawn a subagent to do the execution work.
-- Use `deepseek-v4-flash-free` for subagents whenever possible.
+- Use `muse-spark-1.3-contributor-free` for subagents whenever possible.
 - When you ask the developer to approve work, give the developer the commands to view and test the changes.
 
 ## Research

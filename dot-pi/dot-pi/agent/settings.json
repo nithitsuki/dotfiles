@@ -8,9 +8,10 @@
     "npm:pi-subagents",
     "npm:pi-agent-web-access",
     "npm:pi-ask-user",
-    "npm:awesome-pi-themes"
+    "npm:awesome-pi-themes",
+    "npm:pi-mcp-adapter"
   ],
-  "lastChangelogVersion": "0.84.3",
+  "lastChangelogVersion": "0.85.1",
   "subagents": {
     "watchdog": {
       "enabled": true,
@@ -18,7 +19,7 @@
         "enabled": true
       }
     },
-    "defaultModel": "opencode-go/deepseek-v4-flash",
+    "defaultModel": "opencode/muse-spark-1.3-contributor-free",
     "defaultThinking": "max"
   }
 }
