@@ -20,6 +20,14 @@
 (package! shell-maker)
 (package! acp)
 (package! agent-shell)
+;; Terminal emulator for Emacs powered by libghostty-vt (MELPA). The native
+;; module is a prebuilt binary that auto-downloads on first use.
+(package! ghostel)
+(package! evil-ghostel)
+;; Kitty graphics protocol / Sixel images for terminal Emacs — GitHub only,
+;; not on MELPA.
+(package! kitty-graphics
+  :recipe (:host github :repo "cashmeredev/kitty-graphics.el"))
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:

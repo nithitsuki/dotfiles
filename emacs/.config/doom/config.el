@@ -60,8 +60,57 @@
   (setq org-directory "~/Documents/org/")
   ;;(setq org-startup-with-latex-preview t)
   (setq org-preview-latex-default-process 'dvisvgm)
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 0.5))
-)
+
+  ;; --- inline images -------------------------------------------------------
+  ;; Show linked images inline when a file opens (toggle with the keybind below).
+  (setq org-startup-with-inline-images t)
+  ;; Cap inline-image width so big figures don't blow out the frame.
+  (setq org-image-actual-width 600)
+  ;; Keybind: toggle inline images in the current buffer.
+  (map! :map org-mode-map
+        :localleader
+        "Ti" #'org-toggle-inline-images))
+
+  ;; --- LaTeX preview size -------------------------------------------------
+  ;; A flat :scale 0.5 made previews tiny.  Fragments are typeset as a 10pt
+  ;; LaTeX document, and org renders them at
+  ;;   px = <process :image-size-adjust> * :scale * display-dpi * 10pt / 72.27
+  ;; (dvisvgm's adjust is 1.7; your display reports ~76dpi while Emacs sizes
+  ;; the 14px SF Mono font against a 96dpi assumption).  So instead of a magic
+  ;; constant, derive :scale from the actual default-face pixel size each time
+  ;; previews are rendered — they always match the buffer text, and track
+  ;; font-size changes automatically.
+  (defcustom my/org-latex-preview-magnify 1.5
+    "Extra multiplier for LaTeX preview size (SVGs render small)."
+    :type 'number :group 'org)
+
+  (defun my/org-latex-preview-scale ()
+    "Scale LaTeX preview images to match the default face's pixel size,
+times `my/org-latex-preview-magnify', tracking buffer text zoom."
+    (let* ((px (ignore-errors (aref (font-info (face-font 'default)) 2)))
+           (dpi (ignore-errors (org--get-display-dpi)))
+           ;; `face-font' returns the BASE font, blind to buffer text zoom
+           ;; (`text-scale-mode' remaps faces), so account for zoom here —
+           ;; otherwise previews shrink relative to text as you zoom in.
+           (text-mult (if (bound-and-true-p text-scale-mode)
+                          (expt (or text-scale-mode-step 1.2)
+                                (or text-scale-mode-amount 0))
+                        1.0))
+           (adjust (car (or (plist-get
+                             (cdr (assq org-preview-latex-default-process
+                                        org-preview-latex-process-alist))
+                             :image-size-adjust)
+                            '(1.0 . 1.0)))))
+      (if (and (numberp px) (> px 0) (numberp dpi) (> dpi 0)
+               (numberp adjust) (> adjust 0))
+          (* my/org-latex-preview-magnify
+             (/ (* 72.27 px) (* 10.0 dpi adjust)))
+        (* my/org-latex-preview-magnify 1.0)))
+
+  (advice-add 'org-format-latex :before
+              (lambda (&rest _)
+                (plist-put org-format-latex-options
+                           :scale (my/org-latex-preview-scale)))))
 ;; --- Agenda ------------------------------------------------------------------
 
 (org-super-agenda-mode 1)
@@ -497,3 +546,37 @@ When CONTEXT is non-nil, prepend it to the prompt."
   (setq leetcode-prefer-sql "mysql")
   (setq leetcode-save-solutions t)
   (setq leetcode-directory "~/Projects/lc-solves"))
+
+;;; ============================================================================
+;;; TERMINAL GRAPHICS (kitty-graphics) & GHOSTTY TERMINAL EMULATOR (ghostel)
+;;; ============================================================================
+
+;; kitty-graphics.el — images, video (mpv), PDFs (doc-view) and org LaTeX/typst
+;; previews rendered inside terminal Emacs (emacs -nw) via the Kitty graphics
+;; protocol (kitty, Ghostty, WezTerm) or Sixel (foot, Konsole, tmux >= 3.4).
+;; `kitty-graphics-setup' is daemon- and tty-aware: under --daemon it defers
+;; enabling to the first `emacsclient -t' frame and detects every later client,
+;; so calling it unconditionally is safe.  In org: C-c C-x C-v toggles inline
+;; images, C-c C-x C-l previews LaTeX fragments.
+(use-package! kitty-graphics
+  :config
+  (when (executable-find "mpv")
+    (setq kitty-graphics-enable-video t)) ; inline video playback (mpv 0.36+)
+  (kitty-graphics-setup))
+
+;; ghostel — terminal emulator powered by libghostty-vt, the VT engine behind
+;; Ghostty.  True color, Kitty keyboard/graphics protocols, hyperlinks, shell
+;; integration (bash/zsh/fish/nushell) out of the box.  Input modes: semi-char
+;; (default, C-c C-j to toggle), char (C-c M-d), line (C-c C-l), emacs
+;; (C-c C-e), copy (C-c C-t).  `M-x ghostel' or `SPC o g' to open one.
+(use-package! ghostel)
+
+(map! :leader
+      :desc "Ghostel terminal"         "o g" #'ghostel
+      :desc "Ghostel project terminal" "o G" #'ghostel-project)
+
+;; evil-ghostel — evil state support inside ghostel buffers.  In alt-screen
+;; apps (vim, less, TUIs) ESC goes to the terminal; toggle routing with
+;; C-c C-r, or C-c ESC for a one-shot switch to normal state.
+(use-package! evil-ghostel
+  :hook (ghostel-mode . evil-ghostel-mode))
