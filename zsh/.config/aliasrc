@@ -19,3 +19,7 @@ alias e='emacsclient -t'
 alias get_idf='. /opt/esp/esp-idf/export.sh'
 alias opencode='opencode2'
 alias er='systemctl --user restart emacs.service'
+# Send files to the trash instead of deleting. trash-put accepts rm's flags
+# (-r/-R, -f, -d, -i, -v), so `rm -rf`, `rm -fv`, etc. keep working.
+# Bypass with `\rm`, `command rm`, or `sudo rm` for a real delete.
+alias rm='trash-put'
