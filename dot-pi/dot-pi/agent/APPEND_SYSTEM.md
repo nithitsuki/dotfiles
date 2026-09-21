@@ -50,13 +50,6 @@ This file adds rules to the pi system prompt. Follow these rules in every sessio
 - Ask the developer about architecture, future plans, and other important topics.
 - Keep the developer informed at all times.
 
-## Quality workflow
-
-- At session start, load the `ship-quality` skill into your context.
-- Follow the quality gates in the skill for every task.
-- Ask the developer to approve each gate before you continue.
-- The developer can override any gate at any time. Respect the override.
-
 ## Work division
 
 - Do the planning and the coordination yourself.

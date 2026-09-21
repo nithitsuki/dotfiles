@@ -1,5 +1,5 @@
 ---
-description: Run a quality workflow with user approval gates for every task, scaled by risk tier (XXS, XS, S, M, L). Use at the start of each session and for each task. Covers risk triage, spec approval, plan approval, implementation proof, independent review, ship approval, and lessons.
+description: Run a quality workflow with user approval gates, scaled by risk tier (XXS, XS, S, M, L). Load when the user asks for the ship-quality workflow. Covers risk triage, spec approval, plan approval, implementation proof, independent review, ship approval, and lessons.
 name: ship-quality
 ---
 
@@ -7,11 +7,11 @@ name: ship-quality
 
 ## Purpose
 
-This skill runs a quality workflow for every task. The workflow has a quality gate at every step. The user approves each gate. The goal is high-quality work in every session.
+This skill runs a quality workflow with approval gates when the user asks for it. The workflow has a quality gate at every step. The user approves each gate. The goal is high-quality work.
 
 ## When to use this skill
 
-Load this skill at the start of each session. The system prompt requires it. Use it for every task. Do not skip a gate unless the user says to skip it. Exception: for XXS tasks, the skill does not apply. Make the edit directly, with no gates and no subagents.
+Load this skill when the user asks for it, for example: "use ship-quality". Do not load it by default. Do not skip a gate unless the user says to skip it. Exception: for XXS tasks, the skill does not apply. Make the edit directly, with no gates and no subagents.
 
 ## Roles
 

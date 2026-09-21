@@ -51,7 +51,7 @@ pi ships a default system prompt that you can override:
 - `~/.pi/agent/APPEND_SYSTEM.md` — **appends** to the default (global)
 - `.pi/SYSTEM.md` / `.pi/APPEND_SYSTEM.md` — per-project variants
 
-This repo ships `dot-pi/dot-pi/agent/APPEND_SYSTEM.md`, which stows to `~/.pi/agent/APPEND_SYSTEM.md`. It contains the global agent rules (bun-only JS tooling, "Always use `uv` for Python", `fd`/`rg` for search instead of `find`/`grep` with command outputs saved to files, `asd-ste100` for documentation, aggressive `ask_user` / `web_search` use, subagent review before commit/push, a quality-gate workflow, the project-skills loading rule, and the stack-tools rule to find official skills and MCP servers for each technology — e.g. Supabase). The rules are written in ASD-STE100 Simplified Technical English. Changes take effect on the next pi start.
+This repo ships `dot-pi/dot-pi/agent/APPEND_SYSTEM.md`, which stows to `~/.pi/agent/APPEND_SYSTEM.md`. It contains the global agent rules (bun-only JS tooling, "Always use `uv` for Python", `fd`/`rg` for search instead of `find`/`grep` with command outputs saved to files, `asd-ste100` for documentation, aggressive `ask_user` / `web_search` use, subagent review before commit/push, the project-skills loading rule, and the stack-tools rule to find official skills and MCP servers for each technology — e.g. Supabase). The rules are written in ASD-STE100 Simplified Technical English. Changes take effect on the next pi start.
 
 The same rules apply to opencode via `~/.config/opencode/instructions/agent-rules.md` (registered in `opencode.jsonc` under `instructions`), adapted to opencode's tools (`ask`, `webfetch`, `/tmp/opencode`, `general` subagents). Keep the two rule files in sync.
 
@@ -227,7 +227,7 @@ Rationale: loading the right domain skills up front measurably improves output q
 
 - `lastChangelogVersion` is stripped from the tracked `settings.json` — it's ephemeral state that pi rewrites on startup, which would otherwise dirty the repo after every pi update.
 - If the symlink is ever replaced by a real file (e.g. you run `pi` before stowing on a fresh machine), re-stow or diff the files: pi writes through the symlink, so edits in `~/.pi/agent/settings.json` are edits in this repo.
-- The rules in `APPEND_SYSTEM.md` require loading the **`ship-quality`** skill at session start. It is a risk-scaled quality-gate workflow (spec approval → plan approval → implementation with proof → independent review → user ship approval → lessons) that keeps the developer in the loop on every task, with a user override at any point. See its `SKILL.md` for the full protocol.
+- The **`ship-quality`** skill is an opt-in, risk-scaled quality-gate workflow (spec approval → plan approval → implementation with proof → independent review → user ship approval → lessons) that keeps the developer in the loop, with a user override at any point. `APPEND_SYSTEM.md` does not load it automatically — ask for it (for example, "use ship-quality") when you want the gates. See its `SKILL.md` for the full protocol.
 
 ## Fresh install checklist
 
