@@ -568,15 +568,12 @@ When CONTEXT is non-nil, prepend it to the prompt."
 ;; Ghostty.  True color, Kitty keyboard/graphics protocols, hyperlinks, shell
 ;; integration (bash/zsh/fish/nushell) out of the box.  Input modes: semi-char
 ;; (default, C-c C-j to toggle), char (C-c M-d), line (C-c C-l), emacs
-;; (C-c C-e), copy (C-c C-t).  `M-x ghostel' or `SPC o g' to open one.
-(use-package! ghostel)
-
+;; (C-c C-e), copy (C-c C-t).
+;;
+;; The `:term ghostel' module (init.el) brings the packages, the evil-ghostel
+;; hook, popup rules, and the vterm-compatible leader keys: `SPC o t' toggles
+;; a project-root ghostel popup, `SPC o T' opens a terminal in the current
+;; window.
 (map! :leader
       :desc "Ghostel terminal"         "o g" #'ghostel
       :desc "Ghostel project terminal" "o G" #'ghostel-project)
-
-;; evil-ghostel — evil state support inside ghostel buffers.  In alt-screen
-;; apps (vim, less, TUIs) ESC goes to the terminal; toggle routing with
-;; C-c C-r, or C-c ESC for a one-shot switch to normal state.
-(use-package! evil-ghostel
-  :hook (ghostel-mode . evil-ghostel-mode))

@@ -20,10 +20,6 @@
 (package! shell-maker)
 (package! acp)
 (package! agent-shell)
-;; Terminal emulator for Emacs powered by libghostty-vt (MELPA). The native
-;; module is a prebuilt binary that auto-downloads on first use.
-(package! ghostel)
-(package! evil-ghostel)
 ;; Kitty graphics protocol / Sixel images for terminal Emacs — GitHub only,
 ;; not on MELPA.
 (package! kitty-graphics
