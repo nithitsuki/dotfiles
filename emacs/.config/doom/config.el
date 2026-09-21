@@ -26,6 +26,14 @@
 (setq doom-font (font-spec :family "SF Mono" :size 14)
       doom-variable-pitch-font (font-spec :family "SF Mono" :size 16))
 
+;; Nerd Fonts v3 keep many icons — e.g. doom-modeline's nf-md-* Material Design
+;; glyphs (evil-state circle #xf0c13, read-only lock #xf033e) — in the
+;; Supplementary Private Use Areas.  SF Mono has no coverage there, so map
+;; those planes to the installed Nerd Font explicitly.
+(dolist (range '((#xf0000 . #xffffd)        ; Plane 15 PUA — nf-md-*
+                 (#x100000 . #x10fffd)))    ; Plane 16 PUA
+  (set-fontset-font t range "JetBrainsMono Nerd Font Mono" nil 'prepend))
+
 ;; Frame transparency
 (add-to-list 'default-frame-alist '(alpha-background . 85))
 (set-frame-parameter nil 'alpha-background 85)
