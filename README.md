@@ -11,6 +11,30 @@ cd .dotfiles && bash ./run.sh
 ```
 - Lets you select packages separately easily
 
+### Windows (PowerShell)
+
+```powershell
+git clone https://github.com/nithitsuki/dotfiles.git "$HOME\.dotfiles"
+cd "$HOME\.dotfiles"
+powershell -ExecutionPolicy Bypass -File .\run.ps1
+```
+
+Windows counterpart to `run.sh`. It:
+- Installs GNU Stow (for Git Bash) and verifies real symlink support,
+  offering to enable Windows Developer Mode if needed.
+- Stows the packages you pick (default: `emacs` → `~/.config/doom`).
+- Sets `HOME` and `PATH` so Emacs and Git Bash agree on what `~` means.
+- Optionally installs the latest GNU Emacs (via winget, or Chocolatey) and sets
+  up Doom Emacs in `~/.emacs.d` — without overwriting the stowed config.
+- Registers the Emacs daemon to start at login, and creates `emacsclient`
+  shortcuts in the Start Menu, on the desktop, and on the taskbar.
+
+Options: `-Yes` (non-interactive), `-Packages emacs,zsh`, `-NoEmacs`,
+`-NoDaemon`, `-NoShortcuts`, `-DryRun`, `-Force`.
+
+Only `emacs`, `kitty`, `zsh` and `dot-pi` make sense on Windows; `hypr`,
+`waybar`, `keyd` and the xdg-desktop-portal packages are Linux-only.
+
 ### Manual (stow)
 
 ```bash
