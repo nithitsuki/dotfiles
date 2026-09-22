@@ -193,3 +193,26 @@
        :config
        ;;literate
        (default +bindings +smartparens))
+
+
+;;
+;;; Local tweaks
+;;
+
+;; On machines without aspell/hunspell/enchant (e.g. this Windows box), Doom's
+;; :checkers spell module emits a "Can't find <checker> in your $PATH" warning
+;; at startup.  Silence just that one message rather than the whole module.
+;; This must live in init.el (not config.el): module configs are what raise the
+;; warning, and they load before $DOOMDIR/config.el.
+;;
+;; It's a no-op wherever a spell checker is installed, and installing one
+;; (aspell/hunspell/enchant) is still the better fix if you want flyspell.
+(defun my/suppress-spell-checker-warning-a (orig format &rest args)
+  "Like `warn', but drop the \"Can't find CHECKER in your $PATH\" notice."
+  (unless (and (stringp format)
+               (string-match-p "Can't find .* in your \\$PATH" format))
+    (apply orig format args)))
+
+(require 'warnings)
+(unless (advice-member-p #'my/suppress-spell-checker-warning-a 'warn)
+  (advice-add 'warn :around #'my/suppress-spell-checker-warning-a))

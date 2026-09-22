@@ -23,8 +23,12 @@
 
 ;; Theme & fonts
 (setq doom-theme 'doom-1337)
-(setq doom-font (font-spec :family "SF Mono" :size 14)
-      doom-variable-pitch-font (font-spec :family "SF Mono" :size 16))
+;; SF Mono is macOS-only: without it Emacs errors on every GUI frame with
+;; "Could not find a font on your system: SF Mono", so substitute an installed
+;; Nerd Font elsewhere (Windows exposes Nerd Fonts v3's abbreviated names).
+(let ((my/font-family (if (featurep :system 'windows) "JetBrainsMono NFM" "SF Mono")))
+  (setq doom-font (font-spec :family my/font-family :size 14)
+        doom-variable-pitch-font (font-spec :family my/font-family :size 16)))
 
 ;; Nerd Font icons (doom-modeline's nf-md-* Material Design glyphs, treemacs,
 ;; …).  nerd-icons defaults to "Symbols Nerd Font Mono", which is not
@@ -32,10 +36,16 @@
 ;; variable at render time.  Also map the Supplementary Private Use planes
 ;; (where Nerd Fonts v3 keeps nf-md-*) in the default fontset as a fallback
 ;; for anything else that draws PUA glyphs.
-(setq nerd-icons-font-family "JetBrainsMono Nerd Font Mono")
+;; Nerd Fonts v3 abbreviates family names so they fit Windows' 31-character
+;; family limit.  fontconfig (Linux) exposes the typographic name, but Emacs's
+;; w32 backend only sees the abbreviated one, so pick per platform.
+(setq nerd-icons-font-family
+      (if (featurep :system 'windows)
+          "JetBrainsMono NFM"                 ; i.e. "… Nerd Font Mono"
+        "JetBrainsMono Nerd Font Mono"))
 (dolist (range '((#xf0000 . #xffffd)        ; Plane 15 PUA — nf-md-*
                  (#x100000 . #x10fffd)))    ; Plane 16 PUA
-  (set-fontset-font t range "JetBrainsMono Nerd Font Mono" nil 'prepend))
+  (set-fontset-font t range nerd-icons-font-family nil 'prepend))
 
 ;; Frame transparency
 (add-to-list 'default-frame-alist '(alpha-background . 85))
@@ -326,7 +336,7 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 (use-package! gptel
   :config
   (when-let (env-key (getenv "OPENAI_API_KEY"))
-    (setq! gptel-api-key env-key))
+    (setopt gptel-api-key env-key))
   (gptel-make-anthropic "Personal Claude"
     :stream t
     :key (getenv "CLAUDE_KEY"))
