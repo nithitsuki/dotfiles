@@ -26,11 +26,13 @@ Windows counterpart to `run.sh`. It:
 - Sets `HOME` and `PATH` so Emacs and Git Bash agree on what `~` means.
 - Optionally installs the latest GNU Emacs (via winget, or Chocolatey) and sets
   up Doom Emacs in `~/.emacs.d` — without overwriting the stowed config.
+- Installs the JetBrainsMono Nerd Font (the config's icon font; Nerd Fonts v3
+  abbreviates family names, so Windows only exposes `JetBrainsMono NFM`).
 - Registers the Emacs daemon to start at login, and creates `emacsclient`
   shortcuts in the Start Menu, on the desktop, and on the taskbar.
 
 Options: `-Yes` (non-interactive), `-Packages emacs,zsh`, `-NoEmacs`,
-`-NoDaemon`, `-NoShortcuts`, `-DryRun`, `-Force`.
+`-NoDaemon`, `-NoShortcuts`, `-NoFont`, `-DryRun`, `-Force`.
 
 Only `emacs`, `kitty`, `zsh` and `dot-pi` make sense on Windows; `hypr`,
 `waybar`, `keyd` and the xdg-desktop-portal packages are Linux-only.

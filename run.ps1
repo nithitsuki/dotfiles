@@ -16,7 +16,10 @@
          PATH). The wrapper forces MSYS=winsymlinks:nativestrict so links are
          real NTFS symlinks.
       4. Applies the selected stow packages (default: emacs).
-      5. Optionally installs the latest GNU Emacs via winget (or Chocolatey).
+      5. Installs the JetBrainsMono Nerd Font that the Doom config uses for its
+         icon glyphs (Nerd Fonts v3 abbreviates family names, and only
+         "JetBrainsMono NFM" is visible to Emacs on Windows), then optionally
+         installs the latest GNU Emacs via winget (or Chocolatey).
       6. Optionally clones Doom Emacs to ~/.emacs.d and runs `doom install`.
          This never touches your stowed config (it runs with --no-config), and
          it also drops a bin\doom.cmd shim, because PowerShell's PATHEXT has no
@@ -43,6 +46,9 @@
 .PARAMETER NoShortcuts
     Skip creating Emacs shortcuts (Start Menu, desktop, taskbar).
 
+.PARAMETER NoFont
+    Skip installing the JetBrainsMono Nerd Font (used for icon glyphs).
+
 .PARAMETER DryRun
     Run stow in simulation mode (-n). Installs nothing, changes nothing.
 
@@ -65,6 +71,7 @@ param(
     [switch] $NoEmacs,
     [switch] $NoDaemon,
     [switch] $NoShortcuts,
+    [switch] $NoFont,
     [switch] $DryRun,
     [switch] $Force
 )
@@ -394,6 +401,63 @@ function Install-Emacs {
     return $emacsBin
 }
 
+function Install-NerdFont {
+    if ($NoFont) { return }
+
+    Write-Step 'Nerd Font (icon glyphs)'
+
+    # Nerd Fonts v3 abbreviates family names so they fit Windows' 31-character
+    # family limit, so install the JetBrainsMono Nerd Font and detect it as
+    # "JetBrainsMono NFM" (i.e. the old "... Nerd Font Mono" name), which is
+    # what Emacs's w32 backend actually exposes.
+    $fontPattern = 'JetBrainsMono\s+(NFM|Nerd Font Mono)'
+
+    function Test-NerdFont {
+        foreach ($key in @(
+                'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts',
+                'HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts')) {
+            $item = Get-ItemProperty -Path $key -ErrorAction SilentlyContinue
+            if ($null -eq $item) { continue }
+            foreach ($prop in $item.PSObject.Properties) {
+                if ($prop.Name -match $fontPattern) { return $true }
+            }
+        }
+        return $false
+    }
+
+    if (Test-NerdFont) {
+        Write-Ok 'JetBrainsMono Nerd Font already installed.'
+        return
+    }
+    if ($DryRun) { Write-Info 'Dry run: would install the JetBrainsMono Nerd Font.'; return }
+
+    if (-not (Confirm-Action 'Install the JetBrainsMono Nerd Font (icon glyphs)?' $true)) {
+        Write-Warn2 'Skipping the font; Emacs icons will render as boxes.'
+        return
+    }
+
+    if (-not (Get-Command winget.exe -ErrorAction SilentlyContinue)) {
+        Write-Warn2 'winget not found. Install a Nerd Font manually, e.g. the'
+        Write-Warn2 'JetBrainsMono release from https://github.com/ryanoasis/nerd-fonts/releases'
+        return
+    }
+
+    # The MSI is machine-wide, so this may raise a UAC prompt.
+    $wingetArgs = 'install --id DEVCOM.JetBrainsMonoNerdFont --exact --silent --disable-interactivity ' +
+                  '--accept-package-agreements --accept-source-agreements'
+    if (Test-Admin) {
+        & winget.exe $wingetArgs.Split(' ') | Write-Host
+    } else {
+        Invoke-Elevated "winget.exe $wingetArgs" 'winget install JetBrainsMono Nerd Font' | Out-Null
+    }
+
+    if (Test-NerdFont) {
+        Write-Ok 'JetBrainsMono Nerd Font installed.'
+    } else {
+        Write-Warn2 'Could not verify the font install; install it manually if icons are boxes.'
+    }
+}
+
 function Install-Doom {
     param([string] $EmacsBin)
     if ($NoEmacs) { return }
@@ -638,6 +702,8 @@ if ($DryRun) {
     Install-Doom -EmacsBin $emacsBin
 }
 
+Install-NerdFont
+
 if ($emacsBin -and -not $DryRun) {
     Add-UserPath (Join-Path $UserHome 'bin')
 }
@@ -651,4 +717,4 @@ Write-Host 'Next steps:'
 Write-Host '  - Open a new terminal so PATH/HOME changes take effect.'
 Write-Host '  - `emacs` (GUI), `emacsclientw -c` (new frame), `emacsclient -t` (terminal frame).'
 Write-Host '  - `doom sync` after editing ~/.config/doom.'
-Write-Host '  - Fonts: this config expects "SF Mono" and "JetBrainsMono Nerd Font Mono".'
+Write-Host '  - Fonts: macOS/Linux use SF Mono; on Windows the config uses JetBrainsMono NFM.'
