@@ -79,6 +79,38 @@ Per the agent rules, use the **official** MCP server for each technology in the 
 
 To find the official server for a new technology, search the web for `<technology> official MCP server` and read the project's docs — do not guess the URL. Prefer `remote` servers with `oauth` auth when the provider supports it. Servers that require a secret stay out of the committed/stowed config.
 
+### wger (workout tracking)
+
+The official [wger MCP server](https://github.com/wger-project/mcp-server) exposes the wger REST API
+(routines, workout logs, sessions, body weight, analytics). Wired into three consumers:
+
+| Consumer | Config | `WGER_BASE_URL` |
+| --- | --- | --- |
+| opencode (this machine) | `~/.config/opencode/opencode.jsonc` | `https://wger.nithitsuki.com` |
+| opencode (lumen) | `~/.config/opencode/opencode.jsonc` | `http://localhost:8002` |
+| Hermes (`hermes-agent` on lumen) | `/opt/data/config.yaml` → `mcp_servers` | `https://wger.nithitsuki.com` |
+
+All three run it over stdio: `uvx wger-mcp --transport stdio`. `MCP_TOOLS` trims the tool surface —
+85 tools is ≈18.6k tokens of schema per request. opencode uses the coach profile, Hermes the trainee
+profile plus analytics:
+
+```
+MCP_TOOLS=routines,workout_logs,workout_sessions,exercises,analytics
+```
+
+The credential is a wger DRF API key (wger → Settings → API key), and it acts as your account, so it
+is **not** committed here. opencode reads it from its machine-local config; Hermes reads
+`WGER_API_KEY` from `containers/hermes-agent/.env`, which is SOPS-encrypted in the homelab repo.
+Mint one with:
+
+```bash
+podman exec wgernithitsukicom_web_1 sh -c \
+  "cd /home/wger/src && python3 manage.py drf_create_token nithitsuki"
+```
+
+Requires wger ≥ 2.6 (this instance is 2.7.0). Hermes also needs the container recreated, not just
+restarted, for a changed `env_file` to reach the process: `podman-compose up -d --force-recreate`.
+
 ## Deliberately NOT stowed
 
 These live under `~/.pi/agent/` and `~/.config/opencode/` but stay local to the machine:
