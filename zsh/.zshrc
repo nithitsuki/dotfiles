@@ -88,6 +88,7 @@ export NVM_DIR="$HOME/.nvm"
 export PATH="$HOME/.bun/bin:$PATH"
 
 export PATH=$PATH:$HOME/.maestro/bin
+export PATH="$HOME/.config/emacs/bin:$PATH" # Doom Emacs CLI (doom, doom-doctor, ...)
 # >>> juliaup initialize >>>
 # !! Contents within this block are managed by juliaup !!
 path=("$HOME/.juliaup/bin" $path) # MODIFIED
