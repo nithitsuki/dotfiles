@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: enum ... { case ... }
+# --
+enum ${1:Name} {
+    case ${2:Case1}
+    $0
+}

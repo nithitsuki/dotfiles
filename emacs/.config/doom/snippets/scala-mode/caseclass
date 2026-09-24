@@ -1,0 +1,4 @@
+# -*- mode: snippet -*-
+# name: case class ...(...)
+# --
+case class ${1:Name}(${2:params})

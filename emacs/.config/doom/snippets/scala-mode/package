@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: package ...
+# --
+package ${1:name}
+$0

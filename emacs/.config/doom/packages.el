@@ -17,6 +17,9 @@
 (package! perfect-margin)
 (package! auctex)
 (package! base16-theme)
+;; Open `jar:file:...' URIs returned by Metals for dependency symbols (M-. into
+;; library sources).  See https://scalameta.org/metals/docs/editors/emacs/#eglot
+(package! jarchive)
 (package! shell-maker)
 (package! acp)
 (package! agent-shell)

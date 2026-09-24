@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: expr match { case ... => ... }
+# --
+${1:expr} match {
+    case ${2:pattern} => ${3:result}
+    $0
+}

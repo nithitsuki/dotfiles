@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: xs.map { x => ... }
+# --
+${1:xs}.map { ${2:x} =>
+    $0
+}

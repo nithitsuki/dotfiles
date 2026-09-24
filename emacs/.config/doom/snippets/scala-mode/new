@@ -1,0 +1,4 @@
+# -*- mode: snippet -*-
+# name: new ClassName(...)
+# --
+new ${1:ClassName}($0)

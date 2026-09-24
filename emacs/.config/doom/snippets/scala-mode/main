@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: def main(args: Array[String]): Unit = { ... }
+# --
+def main(args: Array[String]): Unit = {
+    $0
+}

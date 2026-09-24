@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: extension (x: T) { ... }
+# --
+extension (${1:x}: ${2:Type}) {
+    def ${3:name}: ${4:Type} = $0
+}

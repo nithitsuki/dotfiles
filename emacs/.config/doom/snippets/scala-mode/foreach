@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: xs.foreach { x => ... }
+# --
+${1:xs}.foreach { ${2:x} =>
+    $0
+}

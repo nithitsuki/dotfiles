@@ -1,0 +1,4 @@
+# -*- mode: snippet -*-
+# name: import package.Symbol
+# --
+import ${1:package}.${2:Symbol}

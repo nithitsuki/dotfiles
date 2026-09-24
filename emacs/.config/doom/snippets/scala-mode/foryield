@@ -1,0 +1,4 @@
+# -*- mode: snippet -*-
+# name: for (...) yield ...
+# --
+for (${1:x} <- ${2:xs}) yield $0

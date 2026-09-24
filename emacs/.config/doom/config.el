@@ -558,6 +558,46 @@ When CONTEXT is non-nil, prepend it to the prompt."
 (advice-add 'agent-shell--on-request :around #'my/agent-shell--on-request-around)
 
 ;;; ============================================================================
+;;; LSP / SCALA
+;;; ============================================================================
+
+;; --- Scala: eglot + Metals + corfu ------------------------------------------
+;; `:tools (lsp +eglot)' means Doom's `:lang scala +lsp' does NOT install
+;; lsp-metals (see modules/lang/scala/packages.el); eglot talks to the `metals'
+;; server directly, which is already in its default `eglot-server-programs'.
+;; Keep a single completion backend: corfu + cape, no company, no lsp-mode.
+
+;; Metals returns `jar:file:...' URIs for symbols defined in dependencies.
+;; Without jarchive, Emacs has no file-name-handler for them and M-. cannot open
+;; the source.  See https://scalameta.org/metals/docs/editors/emacs/#eglot
+(after! eglot
+  (require 'jarchive nil t)
+  (when (fboundp 'jarchive-mode)
+    (jarchive-mode 1)))
+
+;; Make Corfu pop up on the characters Metals uses as completion triggers
+;; (member access and string interpolators).  `corfu-auto-trigger' is a global
+;; variable, so set it buffer-locally to keep `{` from opening the popup in
+;; other major modes.  See the same Metals page, "Automatic completion inside
+;; string interpolators".
+(after! scala-mode
+  (add-hook 'scala-mode-hook
+            (lambda () (setq-local corfu-auto-trigger ".${"))))
+
+;; Metals runs in its own JVM.  The Arch launcher's defaults omit GC tuning, so
+;; supply Metals' recommended options (G1GC + string dedup) while keeping its 25%
+;; RAM cap.  `setenv' updates `process-environment', which the process eglot
+;; spawns inherits.  Takes effect the next time a Metals server starts.
+(setenv "METALS_JAVA_OPTS"
+        (mapconcat #'identity
+                   '("-XX:+UseG1GC"
+                     "-XX:+UseStringDeduplication"
+                     "-Xss4m"
+                     "-Xms100m"
+                     "-XX:MaxRAMPercentage=25.0")
+                   " "))
+
+;;; ============================================================================
 ;;; LEETCODE
 ;;; ============================================================================
 

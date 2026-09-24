@@ -1,0 +1,4 @@
+# -*- mode: snippet -*-
+# name: element1 :: element2
+# --
+${1:head} :: ${2:tail}
