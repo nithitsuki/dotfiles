@@ -4,3 +4,5 @@ hypr/.config/hypr/.env
 *.bak.*
 .env
 .pi-subagents/
+# hypr-lens install output (third-party QML, refreshed by hypr-lens-install.sh)
+quickshell/.config/quickshell/hypr-lens/

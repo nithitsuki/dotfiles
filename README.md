@@ -67,14 +67,21 @@ See `hypr/.config/hypr/.env.example` in the repo for a template.
 ## hypr-lens (fork)
 
 Screen capture, OCR, search, and recording overlay. Installed from my fork of
-[thesleepingsage/hypr-lens](https://github.com/thesleepingsage/hypr-lens); installer fixes are in
-[PR #9](https://github.com/thesleepingsage/hypr-lens/pull/9).
+[thesleepingsage/hypr-lens](https://github.com/thesleepingsage/hypr-lens).
+
+> [!IMPORTANT]
+> `main`'s installer crashes (`set -u` on an unset associative-array key). The fix is in
+> [PR #9](https://github.com/thesleepingsage/hypr-lens/pull/9), so install from its branch until it merges.
 
 ```bash
 # Install (Arch only)
 git clone https://github.com/nithitsuki/hypr-lens.git ~/Projects/hypr-lens
 cd ~/Projects/hypr-lens
+git checkout fix/installer-hardening   # PR #9 installer fix (not on main yet)
 ./hypr-lens-install.sh     # say yes to the OpenCV venv (content detection)
+
+# The installer misclassifies the icon font as an official-repo package; take it from the AUR:
+paru -S ttf-material-symbols-variable-git
 
 # Start it (also in the hyprland.lua autostart block)
 hypr-lens                  # or: hl
@@ -86,7 +93,9 @@ The installed reference list is `~/.config/hypr-lens/keybinds.example.conf`.
 
 > [!NOTE]
 > - Keep the fork fast-forwarded to upstream: `gh repo sync nithitsuki/hypr-lens`
-> - Optional packages the installer offers: `satty` (annotate on right-click) and `wf-recorder` (recording)
+> - Optional packages the installer offers: `satty` (annotate on right-click), `swappy`,
+>   `matugen-bin` (Material You theming) and `wf-recorder` (recording)
+> - The Print-family keybinds match the fork's `docs/keybinds` branch
 
 ## Coding Agents
 
