@@ -87,10 +87,6 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun" # MODIFIED
 export PATH="$HOME/.bun/bin:$PATH"
 
-# Android SDK (built via arch-installation-quirks.md)
-export ANDROID_HOME=/opt/android-sdk
-export ANDROID_SDK_ROOT=/opt/android-sdk
-export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 export PATH=$PATH:$HOME/.maestro/bin
 # >>> juliaup initialize >>>
 # !! Contents within this block are managed by juliaup !!

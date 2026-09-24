@@ -11,7 +11,7 @@
     "npm:awesome-pi-themes",
     "npm:pi-mcp-adapter"
   ],
-  "lastChangelogVersion": "0.85.1",
+  "lastChangelogVersion": "0.86.1",
   "subagents": {
     "watchdog": {
       "enabled": true,
