@@ -103,6 +103,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd("vesktop --wayland --start-minimized")
     hl.exec_cmd("keepassxc --minimized")
+    hl.exec_cmd(home .. "/.local/bin/hypr-lens")
 end)
 
 -- dbus-update-activation-environment is handled automatically by Hyprland on
@@ -124,6 +125,13 @@ hl.env("GDK_SCALE", "1.6")
 -- hl.env("QT_STYLE_OVERRIDE", "kvantum")
 -- hl.env("QT_QPA_PLATFORMTHEME", "kde")
 -- hl.env("XDG_MENU_PREFIX", "plasma-")
+
+-- ~/.local/bin for the whole session: the compositor does not read ~/.zshrc, so
+-- exec-once/exec_cmd children (waybar modules, hypr-lens, pip tools) would not see it
+local sessionPath = os.getenv("PATH") or "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+if not sessionPath:find(home .. "/.local/bin", 1, true) then
+    hl.env("PATH", home .. "/.local/bin:" .. sessionPath)
+end
 
 -------------------
 -- LOOK AND FEEL --
@@ -343,8 +351,17 @@ hl.bind(mainMod .. " + R", function()
     hl.dispatch(hl.dsp.dpms({ action = "on" }))
 end)
 
--- Copy screenshot to clipboard
-hl.bind("Print", hl.dsp.exec_cmd("hyprshot -m region --clipboard-only --freeze"))
+-- hypr-lens region selector (global shortcuts: they only exist while the daemon is
+-- running - see the autostart entry below). Print is the capture key; modifiers pick
+-- the action - same family as GNOME/KDE Spectacle.
+hl.bind("Print", hl.dsp.global("quickshell:regionScreenshot"))  -- region screenshot -> clipboard
+hl.bind("SHIFT + Print", hl.dsp.global("quickshell:regionOcr"))  -- OCR -> clipboard
+hl.bind("CTRL + Print", hl.dsp.global("quickshell:regionSearch"))  -- image search (Google Lens)
+-- Recording needs wf-recorder: sudo pacman -S wf-recorder
+hl.bind("ALT + Print", hl.dsp.global("quickshell:regionRecord"))  -- record region (toggle)
+hl.bind("CTRL + SHIFT + Print", hl.dsp.global("quickshell:regionRecordWithSound"))
+-- hyprshot replaced 2026-09-20:
+-- hl.bind("Print", hl.dsp.exec_cmd("hyprshot -m region --clipboard-only --freeze"))
 
 -- Color picker
 hl.bind(winMod .. " + P", hl.dsp.exec_cmd("hyprpicker | wl-copy"))
