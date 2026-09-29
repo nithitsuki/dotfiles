@@ -58,6 +58,20 @@ local terminal    = "kitty"
 local fileManager = "kitty --detach yazi"
 
 --------------------
+-- AUTOSTART ------
+--------------------
+
+-- Start hypr-lens once the compositor is up. The Print-family keybinds below
+-- dispatch to the global shortcuts that this daemon registers.
+-- HyprYou's own main.lua already registers an hl.on("hyprland.start") handler,
+-- so this is a second one; both run.
+local home = os.getenv("HOME")
+
+hl.on("hyprland.start", function()
+    hl.exec_cmd(home .. "/.local/bin/hypr-lens")
+end)
+
+--------------------
 -- KEYBINDS -------
 --------------------
 -- mainMod is ALT, winMod is SUPER, as in the usual setup.
@@ -136,12 +150,16 @@ hl.bind(mainMod .. " + R", function()
     hl.dispatch(hl.dsp.dpms({ action = "on" }))
 end)
 
--- Screenshots. The quickshell/hypr-lens globals are not present in HyprYou,
--- so these use hyprshot.
-hl.bind("Print", hl.dsp.exec_cmd("hyprshot -m region --clipboard-only"))
-hl.bind("SHIFT + Print", hl.dsp.exec_cmd("hyprshot -m region --clipboard-only --freeze"))
-hl.bind("CTRL + Print", hl.dsp.exec_cmd("hyprshot -m window --clipboard-only"))
-hl.bind("ALT + Print", hl.dsp.exec_cmd("hyprshot -m output --clipboard-only"))
+-- Screenshots, OCR, image search, and recording, all through hypr-lens (started
+-- in the AUTOSTART block above). Modifiers pick the action, as in the usual
+-- setup: Print (region screenshot), Shift+Print (OCR), Ctrl+Print (image
+-- search), Alt+Print (record), Ctrl+Shift+Print (record with sound).
+-- The quickshell:region* global shortcuts only exist while the daemon runs.
+hl.bind("Print", hl.dsp.global("quickshell:regionScreenshot"))  -- region screenshot -> clipboard
+hl.bind("SHIFT + Print", hl.dsp.global("quickshell:regionOcr"))  -- OCR -> clipboard
+hl.bind("CTRL + Print", hl.dsp.global("quickshell:regionSearch"))  -- image search (Google Lens)
+hl.bind("ALT + Print", hl.dsp.global("quickshell:regionRecord"))  -- record region (toggle)
+hl.bind("CTRL + SHIFT + Print", hl.dsp.global("quickshell:regionRecordWithSound"))  -- record with sound
 
 -- Color picker
 hl.bind(winMod .. " + P", hl.dsp.exec_cmd("hyprpicker | wl-copy"))
