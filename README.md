@@ -35,7 +35,7 @@ Options: `-Yes` (non-interactive), `-Packages emacs,zsh`, `-NoEmacs`,
 `-NoDaemon`, `-NoShortcuts`, `-NoFont`, `-DryRun`, `-Force`.
 
 Only `emacs`, `kitty`, `zsh` and `dot-pi` make sense on Windows; `hypr`,
-`waybar`, `keyd` and the xdg-desktop-portal packages are Linux-only.
+`hypryou`, `waybar`, `keyd` and the xdg-desktop-portal packages are Linux-only.
 
 ### Manual (stow)
 
@@ -96,6 +96,44 @@ The installed reference list is `~/.config/hypr-lens/keybinds.example.conf`.
 > - Optional packages the installer offers: `satty` (annotate on right-click), `swappy`,
 >   `matugen-bin` (Material You theming) and `wf-recorder` (recording)
 > - The Print-family keybinds match the fork's `docs/keybinds` branch
+
+## HyprYou
+
+A Hyprland-based desktop from the AUR. It ships system files plus a `HyprYou`
+Wayland session, and keeps all of its user config in `~/.config/hypryou/` — it
+does **not** read `~/.config/hypr/`. This is not dotfiles; install it from the
+AUR:
+
+```bash
+paru -S hypryou hypryou-utils
+```
+
+> [!NOTE]
+> `hypryou-utils` both `Provides` and `Conflicts` `hyprland-guiutils`, which
+> `hyprland` depends on. Installing `hypryou-utils` therefore *replaces*
+> `hyprland-guiutils` and satisfies `hyprland`'s dependency via `Provides` — no
+> restore step is needed in normal operation. The archived `0.2.2-3` build only
+> matters if you want the real `hyprland-guiutils` back (for example the repo
+> version needs `libhyprtoolkit.so=6`).
+
+The user overrides live in `hypryou/.config/hypryou/hyprland.lua` and are stowed
+normally:
+
+```bash
+stow -t ~ --dotfiles hypryou
+```
+
+hypryou upgrades restore the stock `/usr/share/hypryou/hyprland/main.lua`, which
+loads the generated settings *after* the user config. Run the script again after
+every install or upgrade to fix the load order (and to re-apply the ly restart
+policy and the GTK decoration layout):
+
+```bash
+./hypryou-post-install.sh
+```
+
+The existing `hypr` package is kept as the plain-Hyprland fallback. HyprYou uses
+its own `~/.config/hypryou/` and does not read `~/.config/hypr/`.
 
 ## Coding Agents
 
