@@ -383,6 +383,17 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
               nemotron-3.5-lightning-free))
   (setq gptel-backend my/gptel-go-backend
         gptel-model 'deepseek-v4.1-flash))
+
+;; Doom's `spell +flyspell' module binds [return] in `flyspell-mouse-map', the
+;; overlay keymap that is active on misspelled words.  Any binding for [return]
+;; there suppresses Emacs' default [return] -> RET translation, so RET-based
+;; transient menus such as `gptel-menu' report "Unbound suffix" for the Return
+;; key while point is on a misspelled word.  Remove that binding.  Do not
+;; "fix" it by rebinding [return] to `flyspell-correct-at-point': any binding
+;; for [return] keeps the translation suppressed.  The RET binding in the same
+;; map still corrects the word at point.
+(after! flyspell
+  (define-key flyspell-mouse-map [return] nil))
 ;;(setq doom-emoji-font (font-spec :family "Segoe UI Emoji"))
 
 ;;;;
