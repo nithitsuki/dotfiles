@@ -337,44 +337,52 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
   :config
   (when-let (env-key (getenv "OPENAI_API_KEY"))
     (setopt gptel-api-key env-key))
-  (gptel-make-anthropic "Personal Claude"
-    :stream t
-    :key (getenv "CLAUDE_KEY"))
-  (gptel-make-gh-copilot "Copilot")
-  ;; OpenCode Go subscription (https://opencode.ai/docs/go/)
-  ;; OpenAI-compatible endpoint. gpt-5.6-luna (responses API) and the
-  ;; Qwen/MiniMax models (Anthropic-format endpoint) are not registered here.
-  (gptel-make-openai "OpenCode Go"
-    :host "opencode.ai"
-    :endpoint "/zen/go/v1/chat/completions"
-    :stream t
-    :key #'my/gptel-opencode-api-key
-    :models '(grok-4.5
-              glm-5.2 glm-5.1
-              kimi-k3 kimi-k2.7-code kimi-k2.6
-              deepseek-v4-pro deepseek-v4-flash
-              mimo-v2.5 mimo-v2.5-pro
-              hy3))
+  ;; Only OpenCode Go and OpenCode Zen are registered here, and only their
+  ;; OpenAI-compatible chat/completions models. Models served over the
+  ;; Responses API (Grok, GPT, Muse Spark) or the Anthropic /messages API
+  ;; (Claude, Gemini, some Qwen/MiniMax) cannot be used by gptel's OpenAI
+  ;; backend and are not registered, so they do not show in the gptel menu.
+  ;; OpenCode Go subscription (https://opencode.ai/docs/go/).
+  (defvar my/gptel-go-backend nil
+    "The gptel backend for the OpenCode Go subscription.")
+  (setq my/gptel-go-backend
+        (gptel-make-openai "OpenCode Go"
+          :host "opencode.ai"
+          :endpoint "/zen/go/v1/chat/completions"
+          :stream t
+          :key #'my/gptel-opencode-api-key
+          :models '(glm-5.3-flash glm-5.3 glm-5.2
+                    kimi-k3 kimi-k2.7-code kimi-k2.6
+                    longcat-2.0 longcat-2.5-preview-free
+                    deepseek-v4.1-flash deepseek-v4-pro deepseek-v4-flash
+                    deepseek-v4-flash-vision-exp
+                    mimo-v2.6-flash mimo-v2.6-pro
+                    mimo-v2.5 mimo-v2.5-pro
+                    hy4-preview hy3
+                    space-bunny-free)))
   ;; OpenCode Zen - pay-per-use gateway (https://opencode.ai/docs/zen/),
   ;; same key as Go. Paid models bill against the Zen balance (requests fail
   ;; with a 401 auth error until credits are added); the free models
   ;; (deepseek-v4-flash-free, mimo-v2.5-free, ...) are free but their data may
-  ;; be used for model training. Deprecated (glm-5, kimi-k2.5, minimax-m2.5)
-  ;; and non-chat-completions models (GPT/Grok responses API, Claude/Qwen/
-  ;; Gemini messages API) are not registered here.
+  ;; be used for model training. Deprecated Zen models are not registered.
   (gptel-make-openai "Zen"
     :host "opencode.ai"
     :endpoint "/zen/v1/chat/completions"
     :stream t
     :key #'my/gptel-opencode-api-key
-    :models '(deepseek-v4-pro deepseek-v4-flash
+    :models '(deepseek-v4.1-flash deepseek-v4-pro deepseek-v4-flash
+              deepseek-v4-flash-vision-exp deepseek-v4-flash-free
               minimax-m3 minimax-m2.7
-              glm-5.2 glm-5.1
+              glm-5.3-flash glm-5.3 glm-5.2 glm-5.1
               kimi-k3 kimi-k2.7-code kimi-k2.6
+              qwen3.8-max
               big-pickle
-              deepseek-v4-flash-free mimo-v2.5-free
-              laguna-s-2.1-free ling-3.0-tiny-free
-              longcat-2.0-free north-mini-code-free nemotron-3-ultra-free)))
+              mimo-v2.6-flash-free mimo-v2.5-free
+              space-bunny-free longcat-2.5-preview-free
+              ling-3.0-flash-fin-free nemotron-3-ultra-free
+              nemotron-3.5-lightning-free))
+  (setq gptel-backend my/gptel-go-backend
+        gptel-model 'deepseek-v4.1-flash))
 ;;(setq doom-emoji-font (font-spec :family "Segoe UI Emoji"))
 
 ;;;;
