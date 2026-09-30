@@ -71,6 +71,18 @@ hl.on("hyprland.start", function()
     hl.exec_cmd(home .. "/.local/bin/hypr-lens")
 end)
 
+--------------------------
+-- SCREENSHOT OVERLAY ---
+--------------------------
+
+-- HyprYou animates layer surfaces (animation.lua: layersIn/layersOut, style
+-- "slide"). That makes the hypr-lens selector, which is a layer surface in the
+-- overlay layer, slide in and feel laggy. Show and hide it with no animation.
+hl.layer_rule({
+    match = { namespace = ".*regionSelector.*" },
+    no_anim = true,
+})
+
 --------------------
 -- KEYBINDS -------
 --------------------
@@ -93,6 +105,17 @@ hl.unbind("XF86AudioPlay")
 hl.unbind("XF86AudioPause")
 hl.unbind("XF86AudioNext")
 hl.unbind("XF86AudioPrev")
+
+-- HyprYou's screenshot keys (hyprland_generated.lua). They run
+-- `hypryouctl screenshot`, which shells out to hyprshot and opens HyprYou's
+-- preview window. Screenshots go through hypr-lens only (the Print family
+-- below), so remove all six.
+hl.unbind("SUPER + SHIFT + S")
+hl.unbind("SUPER + SHIFT + F")
+hl.unbind("SUPER + CTRL + S")
+hl.unbind("SUPER + CTRL + F")
+hl.unbind("SUPER + ALT + S")
+hl.unbind("SUPER + ALT + F")
 
 -- HyprYou's app launcher, on the usual key.
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("hypryouctl toggle_window apps_menu"))
