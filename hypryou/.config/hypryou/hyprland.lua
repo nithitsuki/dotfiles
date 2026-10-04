@@ -19,6 +19,27 @@ hl.monitor({
     bitdepth = 10,
 })
 
+-- Stop the compositor from scaling XWayland clients, so X11 apps draw at 1:1
+-- pixel scale instead of being upscaled from a fractional buffer. Without this
+-- the compositor hands X11 clients the monitor scale (1.25 on DP-2, 2 on
+-- eDP-1) and they come out soft; with it they stay sharp but render small, and
+-- you scale up inside the app when you want it bigger.
+--
+-- This is the only place it can live: main.lua loads this file last, so the
+-- value survives both hypryou's own config and hyprland_generated.lua, which
+-- is regenerated from settings.json. Note it must stay under the `xwayland`
+-- section -- the bare keyword is not a valid option, and the old
+-- `xwayland_scale` / `xwayland_scale_factor` options no longer exist in
+-- Hyprland 0.56.
+--
+-- hypryou's environment.lua already exports GDK_SCALE=1 and
+-- QT_AUTO_SCREEN_SCALE_FACTOR=1, so no toolkit compensation is needed here.
+hl.config({
+    xwayland = {
+        force_zero_scaling = true,
+    },
+})
+
 --------------------
 -- OLED CARE -----
 --------------------
@@ -206,3 +227,26 @@ hl.bind("switch:on:Lid Switch", function()
 end, { locked = true })
 
 hl.bind("switch:off:Lid Switch", hl.dsp.dpms({ action = "on" }), { locked = true })
+
+-- Supervise the HyprYou session shell.
+-- hypryou's own autostart.lua launches a bare `hl.exec_cmd("hypryou-start")`, which nothing
+-- supervises. hypryou_ui.py can lose its GTK layer-shell surfaces (the bar and wallpaper
+-- vanish) while still running, or abort outright on a stale HYPRLAND_INSTANCE_SIGNATURE, and
+-- in both cases nothing brings it back. This hands the bare instance over to
+-- ~/.config/systemd/user/hypryou.service, which has Restart=always.
+--
+-- Deliberately a plain exec_cmd at load time rather than hl.on("hyprland.start", ...): that
+-- way this cannot clobber autostart.lua's own "hyprland.start" handler, so xdg.sh, polkit,
+-- cliphist and hyprsunset keep starting. The script waits for the compositor socket to appear
+-- rather than assuming a fixed delay.
+hl.exec_cmd("/home/nithilan/.local/bin/hypryou-session-start.sh")
+
+-- XDG file chooser (yazi) environment repair.
+-- The systemd user manager can start from a TTY login, which leaves
+-- xdg-desktop-portal-termfilechooser with no WAYLAND_DISPLAY. Its kitty+yazi child then
+-- dies with "GLFW initialization failed" and app file dialogs (e.g. Firefox "Upload File")
+-- silently do nothing. hypryou's own xdg.sh restarts the other portal processes but omits
+-- this one, so it keeps the stale environment and keeps owning the FileChooser bus name.
+-- This script re-imports the display env into the user manager and restarts it. Placed here
+-- because this file loads last (main.lua) and so survives hypryou package upgrades.
+hl.exec_cmd("/home/nithilan/.local/bin/repair-termfilechooser.sh")
