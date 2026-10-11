@@ -1,7 +1,11 @@
-hypr/.config/hypr/hyprland.conf
-hypr/.config/hypr/.env
-# timestamped backups written by hyprmon next to hyprland.lua
-*.bak.*
+hyprland-legacy/.config/hypr/hyprland.conf
+hyprland-legacy/.config/hypr/.env
+# timestamped backups (hyprmon, editors, installers)
+*.bak*
+*~
+# HyprYou: generated + machine-specific (monitors, wallpaper paths)
+hypryou/.config/hypryou/hyprland_generated.lua
+hypryou/.config/hypryou/settings.json
 .env
 .pi-subagents/
 # hypr-lens install output (third-party QML, refreshed by hypr-lens-install.sh)
