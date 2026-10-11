@@ -1,0 +1,215 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// 90 — Your personal overrides
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// This file is YOURS. iNiR updates will never overwrite it.
+// Put any custom configuration here: extra binds, per-app window rules,
+// output configuration, named workspaces, etc.
+//
+// Since Niri evaluates config top-to-bottom, settings here take effect
+// after all other config.d files. For window-rule properties, all matching
+// rules accumulate. For scalar values (like gaps), the last one wins.
+//
+// Examples:
+//
+//   // Named workspaces (sticky, always present)
+//   workspace "browser"
+//   workspace "code"
+//   workspace "music"
+//
+//   // Per-app workspace assignment
+//   window-rule {
+//       match app-id="firefox"
+//       open-on-workspace "browser"
+//   }
+//
+//   // Extra keybind
+//   binds {
+//       Mod+P { spawn "rofi" "-show" "drun"; }
+//   }
+//
+//   // Output config for your specific monitor
+//   output "DP-1" {
+//       mode "3440x1440@100.000"
+//       scale 1
+//       position x=0 y=0
+//   }
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Display: restore pre-iNiR setup (hypryou used 2560x1440@74.97, scale 1.25).
+// iNiR left no output block, so Niri fell back to scale 1 (tiny).
+// Display: 2560x1440@~75Hz, scale 1.5. Both connector names covered so the
+// settings survive a cable swap (DP-2 vs HDMI-A-1).
+output "DP-2" {
+    mode "2560x1440@74.971"
+    scale 1.5
+}
+output "HDMI-A-1" {
+    mode "2560x1440@74.964"
+    scale 1.5
+}
+
+// Ported HyprYou muscle-memory binds (Alt = mainMod).
+// iNiR's own binds live in 70-binds.kdl and use Super — nothing below clashes.
+binds {
+    // Apps
+    Alt+Ctrl+Return { spawn "kitty"; }
+    Alt+Ctrl+E { spawn-sh "emacsclient -nc"; }
+    Alt+E { spawn "dolphin"; }
+    Super+E { spawn-sh "kitty --detach yazi"; }
+    Alt+Ctrl+I { spawn "firefox"; }
+    Alt+Space { spawn "inir" "overview" "toggle"; }
+    Alt+P { spawn "fuzzel"; }
+
+    // Window management
+    Alt+Q { close-window; }
+    Alt+Ctrl+C { close-window; }
+    Alt+Ctrl+V { toggle-window-floating; }
+    Alt+Shift+V { switch-focus-between-floating-and-tiling; }
+    Alt+Ctrl+F { fullscreen-window; }
+    Alt+O { switch-preset-column-width; }
+
+    // Focus: pure vim HJKL, no Alt+arrows (Discord/Vesktop owns those).
+    // NOTE: Alt+Ctrl+J/K switch workspaces (below).
+    Alt+Ctrl+H { focus-column-left; }
+    Alt+Ctrl+J { focus-workspace-down; }
+    Alt+Ctrl+K { focus-workspace-up; }
+    Alt+Ctrl+L { focus-column-right; }
+    Alt+H { focus-column-left; }
+    Alt+J { focus-window-down; }
+    Alt+K { focus-window-up; }
+    Alt+L { focus-column-right; }
+
+    // Move (HJKL only, no Alt+Shift+arrows)
+    Alt+Shift+H { move-column-left; }
+    Alt+Shift+J { move-window-down; }
+    Alt+Shift+K { move-window-up; }
+    Alt+Shift+L { move-column-right; }
+
+    // Workspaces
+    Alt+Ctrl+1 { focus-workspace 1; }
+    Alt+Ctrl+2 { focus-workspace 2; }
+    Alt+Ctrl+3 { focus-workspace 3; }
+    Alt+Ctrl+4 { focus-workspace 4; }
+    Alt+Ctrl+5 { focus-workspace 5; }
+    Alt+Ctrl+6 { focus-workspace 6; }
+    Alt+Ctrl+7 { focus-workspace 7; }
+    Alt+Ctrl+8 { focus-workspace 8; }
+    Alt+Ctrl+9 { focus-workspace 9; }
+    Alt+Ctrl+0 { focus-workspace 10; }
+    Alt+Shift+1 { move-column-to-workspace 1; }
+    Alt+Shift+2 { move-column-to-workspace 2; }
+    Alt+Shift+3 { move-column-to-workspace 3; }
+    Alt+Shift+4 { move-column-to-workspace 4; }
+    Alt+Shift+5 { move-column-to-workspace 5; }
+    Alt+Shift+6 { move-column-to-workspace 6; }
+    Alt+Shift+7 { move-column-to-workspace 7; }
+    Alt+Shift+8 { move-column-to-workspace 8; }
+    Alt+Shift+9 { move-column-to-workspace 9; }
+    Alt+Shift+0 { move-column-to-workspace 10; }
+
+    // Scratchpad stand-ins (Niri has no special workspace)
+    Alt+Ctrl+W { focus-workspace-previous; }
+    Alt+W { move-column-to-workspace 10; }
+    Alt+Ctrl+Tab { focus-workspace-previous; }
+
+    // Scroll workspaces with Alt+wheel
+    Alt+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Alt+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
+
+    // Reorder workspaces (keep frequent pairs adjacent)
+    Alt+Shift+Page_Up { move-workspace-up; }
+    Alt+Shift+Page_Down { move-workspace-down; }
+
+    // Waybar toggle + region screenshot to clipboard
+    Alt+B { spawn-sh "killall waybar || waybar"; }
+    Shift+Print { spawn-sh "grim -g \"$(slurp -d)\" - | wl-copy"; }
+
+    // ---- Super-free ports of iNiR/Super binds (HyprYou used Alt-only) ----
+    // Session: quit dialog, power menu, lock (no Super needed)
+    Alt+Ctrl+Q { quit; }
+    Alt+Shift+Q { spawn "inir" "session" "toggle"; }
+    Ctrl+Alt+Delete allow-when-locked=true { spawn "inir" "lock" "activate"; }
+
+    // iNiR shell: overview, terminal, clipboard, settings, cheatsheet
+    Alt+Ctrl+Space { spawn "inir" "overview" "toggle"; }
+    Alt+Ctrl+O { toggle-overview; }
+    Alt+T { spawn "inir" "terminal"; }
+    Alt+Return { spawn "inir" "terminal"; }
+    Alt+V { spawn "inir" "clipboard" "toggle"; }
+    Alt+Comma { spawn "inir" "settings"; }
+    Alt+Slash { spawn "inir" "cheatsheet" "toggle"; }
+    Alt+Shift+W { spawn "inir" "panelFamily" "cycle"; }
+
+    // Region tools (HyprYou had these on Print modifiers; Alt+Shift mirrors iNiR)
+    Alt+Shift+S { spawn "inir" "region" "menu"; }
+    Alt+Shift+X { spawn "inir" "region" "ocr"; }
+    Alt+Shift+A { spawn "inir" "region" "search"; }
+
+    // Displays off/on toggle (HyprYou Alt+R), color picker (was Super+P)
+    Alt+R { power-off-monitors; }
+    Alt+Shift+P { spawn-sh "hyprpicker | wl-copy"; }
+
+    // Layout: maximize, fullscreen, float, center, widths/heights, consume/expel
+    Alt+D { maximize-column; }
+    Alt+F { fullscreen-window; }
+    Alt+A { toggle-window-floating; }
+    Alt+C { center-column; }
+    Alt+Minus { set-column-width "-10%"; }
+    Alt+Equal { set-column-width "+10%"; }
+    Alt+Shift+Minus { set-window-height "-10%"; }
+    Alt+Shift+Equal { set-window-height "+10%"; }
+    Alt+BracketLeft { consume-or-expel-window-left; }
+    Alt+BracketRight { consume-or-expel-window-right; }
+    Alt+Ctrl+Comma { consume-window-into-column; }
+    Alt+Ctrl+Period { expel-window-from-column; }
+
+    // Named "D" workspace (HyprYou)
+    Alt+Ctrl+D { focus-workspace "D"; }
+    Alt+Ctrl+Shift+D { move-column-to-workspace "D"; }
+
+    // Ctrl variants: move a SINGLE window (Alt+Shift+num moves the whole column)
+    Alt+Ctrl+Shift+1 { move-window-to-workspace 1; }
+    Alt+Ctrl+Shift+2 { move-window-to-workspace 2; }
+    Alt+Ctrl+Shift+3 { move-window-to-workspace 3; }
+    Alt+Ctrl+Shift+4 { move-window-to-workspace 4; }
+    Alt+Ctrl+Shift+5 { move-window-to-workspace 5; }
+    Alt+Ctrl+Shift+6 { move-window-to-workspace 6; }
+    Alt+Ctrl+Shift+7 { move-window-to-workspace 7; }
+    Alt+Ctrl+Shift+8 { move-window-to-workspace 8; }
+    Alt+Ctrl+Shift+9 { move-window-to-workspace 9; }
+    Alt+Ctrl+Shift+0 { move-window-to-workspace 10; }
+
+    // Ctrl variants of directional moves (same targets, extra chord)
+    Alt+Ctrl+Shift+H { move-column-left; }
+    Alt+Ctrl+Shift+J { move-window-down; }
+    Alt+Ctrl+Shift+K { move-window-up; }
+    Alt+Ctrl+Shift+L { move-column-right; }
+}
+
+// Sticky named workspace for the Alt+Ctrl+D binds above.
+workspace "D"
+
+// Steam runs XWayland with fixed-size dialogs: float it instead of tiling.
+window-rule {
+    match app-id=r#"[Ss]team"#
+    open-floating true
+}
+
+// Every new window opens at maximum column width instead of the 1/2 default.
+window-rule {
+    default-column-width { proportion 1.0; }
+}
+
+input {
+    keyboard {
+        xkb {
+            layout "us"
+            options "ctrl:nocaps"
+        }
+    }
+}
+
+environment {
+    MOZ_ENABLE_WAYLAND "1"
+}

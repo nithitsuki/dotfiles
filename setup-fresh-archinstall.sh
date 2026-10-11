@@ -107,7 +107,7 @@ fi
 # Array format: "package_name" "Description" "ON/OFF"
 BASE_TOOLS=(
     # --- Shell & Terminal ---
-    "ly" "TUI display manager" "ON"
+    "ly" "TUI display manager (legacy, superseded by sddm)" "OFF"
     "zsh" "Z shell" "ON"
     "zsh-autosuggestions" "Fish-like autosuggestions for zsh" "ON"
     "zsh-autocomplete" "Intelligent autocomplete for zsh" "ON"
@@ -203,18 +203,22 @@ fi
 
 GUI_TOOLS=(
     "xorg-xhost" "X server access control utility (for XWayland apps)" "ON"
-    "hyprland" "Wayland compositor" "ON"
+    "niri" "Scrollable-tiling Wayland compositor (default)" "ON"
+    "quickshell" "QtQuick shell toolkit (iNiR dependency)" "ON"
+    "sddm" "Graphical display manager (iNiR themes it)" "ON"
+    "fuzzel" "Wayland app launcher" "ON"
+    "hyprland" "Wayland compositor (legacy)" "OFF"
     "waybar" "Highly customizable Wayland bar" "ON"
-    "hyprlauncher" "Application launcher" "ON"
+    "hyprlauncher" "Application launcher (hyprland-only)" "OFF"
     "hyprlock" "Screen locker" "ON"
-    "hypridle" "Screen idle" "ON"
+    "hypridle" "Screen idle (hyprland-only)" "OFF"
     "hyprpaper" "Wallpaper manager" "ON"
-    "hyprpolkitagent" "Polkit agent for Hyprland" "ON"
+    "hyprpolkitagent" "Polkit agent" "ON"
     "hyprpicker" "Color picker" "ON"
     "kitty" "Fast, feature-rich, GPU-based terminal" "ON"
-    "xdg-desktop-portal-hyprland" "xdg-desktop-portal backend for hyprland" "ON"
+    "xdg-desktop-portal-hyprland" "xdg-desktop-portal backend for hyprland" "OFF"
     "xdg-desktop-portal-termfilechooser-hunkyburrito-git" "(AUR) Terminal file chooser portal" "ON"
-    "hyprmon-bin" "(AUR)  TUI monitor configuration tool for Hyprland" "ON"
+    "hyprmon-bin" "(AUR) TUI monitor configuration tool for Hyprland" "OFF"
 
     "tesseract-data-eng" "Tesseract OCR English language data" "ON"
     "firefox" "Web browser" "ON"
@@ -315,6 +319,15 @@ resolvectl flush-caches
 # Note: The hyprland hardware profile (pc vs laptop) is chosen via the
 # gitignored ~/.config/hypr/.env file, e.g.:
 #   HYPR_PROFILE=laptop
+#
+# Note: Niri deploy order on a fresh machine (iNiR owns ~/.config/niri/):
+#   1. git clone https://github.com/snowarch/iNiR.git ~/iNiR && ~/iNiR/setup install
+#      (generates config.kdl + config.d/10-80, installs SDDM theme + portals)
+#   2. stow the `niri` package AFTER step 1 (it only ships the update-proof
+#      config.d/90-user-extra.kdl; stow fails if that file already exists,
+#      so remove the installer-generated copy first if restowing)
+#   3. The 90 file carries output scaling, all Alt keybinds, ctrl:nocaps and
+#      MOZ_ENABLE_WAYLAND, so nothing else needs hand-editing post-deploy.
 
 # ==============================================================================
 # Services & GPG Agent Setup
@@ -324,6 +337,10 @@ echo "--> Enabling system services and setting up GPG Agent..."
 if [[ $SELECTED_BASE == *"ly"* ]]; then
     systemctl enable ly@tty3.service
     systemctl disable getty@tty3.service
+fi
+
+if [[ $SELECTED_GUI == *"sddm"* ]]; then
+    systemctl enable sddm.service
 fi
 
 if [[ $SELECTED_BASE == *"networkmanager"* ]]; then
