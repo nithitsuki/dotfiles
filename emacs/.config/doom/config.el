@@ -657,3 +657,100 @@ When CONTEXT is non-nil, prepend it to the prompt."
 (map! :leader
       :desc "Ghostel terminal"         "o g" #'ghostel
       :desc "Ghostel project terminal" "o G" #'ghostel-project)
+
+;;; ============================================================================
+;;; KITTY KEYBOARD PROTOCOL (kkp) — daemon workaround
+;;; ============================================================================
+
+;; Doom's `:os tty' module enables kkp, but with Emacs running as a daemon
+;; (`emacs --fg-daemon') kkp's setup cannot complete for `emacsclient -t' frames:
+;; its query/reply handshake is asynchronous, and while the frame is still being
+;; initialized the terminal's answer is consumed as ordinary input.  kkp then
+;; reads only the tail of the reply (e.g. "62;"), fails its match test, and leaves
+;; its "setup already in progress" flag set, which blocks every later retry.
+;;
+;; The visible result: kitty is left in the extended key mode (ESC arrives as
+;; "CSI 27 u") while no keymap decodes it, so ESC shows up as "M-[ 27 u" instead
+;; of leaving insert state.
+;;
+;; Work around it by asking the terminal directly (the same synchronous query
+;; `M-x kkp-status' uses) once the frame exists, then doing what kkp does after a
+;; successful reply: push the flags, record the terminal's answer, and install the
+;; decode maps.  Mirrors upstream's unmerged fix for kkp issue #17 (b42a470).
+;;
+;; Verify in a tty client frame with `M-x kkp-status': it must say "KKP active in
+;; this terminal", and ESC must leave insert state on the first press.
+;;
+;; This is version-specific by nature -- drop it once kkp handles daemons itself.
+(declare-function kkp-setup-function-keys "kkp" (terminal))
+(declare-function kkp--calculate-flags-integer "kkp" nil)
+(declare-function kkp--csi-escape "kkp" (&rest args))
+(declare-function kkp--make-state "kkp" (&rest args))
+(declare-function kkp--process-keys "kkp" (prefix))
+(declare-function kkp--query-terminal-sync "kkp" (query &optional terminator))
+(declare-function kkp--reply-flags "kkp" (reply))
+(declare-function kkp--reply-indicates-support-p "kkp" (reply))
+(declare-function kkp--terminal-teardown "kkp" (terminal))
+
+(defun +kkp-setup-on-client-frame (frame)
+  "Schedule the kkp setup for a new tty client frame."
+  (when (and (not (display-graphic-p frame))
+             (not (frame-parameter frame 'parent-frame))
+             (require 'kkp nil t))
+    (run-with-timer 1.0 nil #'+kkp-setup-terminal frame)))
+
+;; In a daemon, suppress kkp's own asynchronous attempt: it cannot read the
+;; terminal's reply while the client frame is initializing, so it fails its match
+;; test, leaves "setup already in progress" set, and can let the reply leak into a
+;; buffer as keys (upstream issues #21/#32).  Non-daemon tty sessions keep the
+;; stock path, which works there.
+(defun +kkp-skip-async-in-daemon (fn &rest args)
+  "Call FN with ARGS, except inside a daemon (see the synchronous path below)."
+  (unless (daemonp)
+    (apply fn args)))
+
+(advice-add 'kkp-enable-in-terminal :around #'+kkp-skip-async-in-daemon)
+
+(defun +kkp-setup-terminal (frame)
+  "Set up the kitty keyboard protocol for FRAME's terminal, synchronously."
+  (when (and (frame-live-p frame) (not (display-graphic-p frame)))
+    (with-selected-frame frame
+      (let* ((terminal (frame-terminal frame))
+             (reply (condition-case nil
+                        (kkp--query-terminal-sync "?u" ?u)
+                      (error nil))))
+        (when (and reply (kkp--reply-indicates-support-p reply))
+          (kkp--terminal-teardown terminal)
+          (set-terminal-parameter terminal 'kkp--state (kkp--make-state))
+          (+kkp-enable-terminal terminal))))))
+
+(defun +kkp-enable-terminal (terminal)
+  "Push the protocol flags to TERMINAL and install kkp's decode maps."
+  (let ((wanted (kkp--calculate-flags-integer)))
+    (when (and (integerp wanted) (> wanted 0))
+      (send-string-to-terminal (format "\e[>%su" wanted) terminal)
+      (when (fboundp 'kkp--flush-standard-output)
+        (kkp--flush-standard-output))
+      (let* ((reply (condition-case nil
+                        (kkp--query-terminal-sync "?u" ?u)
+                      (error nil)))
+             (active (or (and reply (kkp--reply-flags reply)) wanted)))
+        ;; Record the terminal as active via a fresh state: the accessor setters do
+        ;; not exist when this file is evaluated before kkp is loaded, but the
+        ;; constructor does.  (The decoder does not consult it, so a failure here
+        ;; costs nothing but teardown bookkeeping.)
+        (condition-case nil
+            (set-terminal-parameter terminal 'kkp--state
+                                    (kkp--make-state :enhancements active))
+          (error nil))
+        (kkp-setup-function-keys terminal)
+        (dolist (target (frames-on-display-list terminal))
+          (with-selected-frame target
+            (normal-erase-is-backspace-mode 1)
+            (dolist (prefix kkp--key-prefixes)
+              (define-key input-decode-map (kkp--csi-escape (string prefix))
+                          (lambda (_prompt) (kkp--process-keys prefix))))
+            (run-hooks 'kkp-terminal-setup-complete-hook)))
+        active))))
+
+(add-hook 'after-make-frame-functions #'+kkp-setup-on-client-frame)
