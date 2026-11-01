@@ -71,6 +71,8 @@ opencode's config lives in `~/.config/opencode/` and is **not** stowed by this r
 > `instructions/`, `skills/`) should ever be versioned, and even then only if they contain
 > no secrets — audit them first.
 
+The secrets-free subset of the opencode config is mirrored in this repo under `opencode-config/.config/opencode/` so the always-on instruction files are versioned. That mirror is **not** a stow package. The files `opencode.jsonc`, `cli.json`, and `service.json` stay machine-local and uncommitted.
+
 When you add an always-on rule for opencode, put it in an `instructions/*.md` file and register it in `opencode.jsonc` under `instructions` (see the `rust-skills.md` entry for the pattern).
 
 ### Per-stack MCP servers
