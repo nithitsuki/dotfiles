@@ -14,6 +14,17 @@
 ;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
 ;;      directory (for easy access to its source code).
 
+;; NOTE Termux / Android guards.  This file is shared between the desktop and a
+;;      phone running GNU Emacs under Termux, where the install is for
+;;      journaling only.  Every module wrapped in
+;;        (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) MODULE)
+;;      is enabled on the desktop and dropped in Termux.  `:if' takes a single
+;;      module in its true branch (see `doom-module-mplist-map'), so each
+;;      dropped module needs its own wrapper; flags go *inside* the module
+;;      list, because `:if' ignores trailing elements.
+;;      The desktop result is unchanged: `getenv' returns nil there, so every
+;;      wrapper simply re-enables the module it wraps.
+
 (doom! :input
        ;;bidi              ; (tfel ot) thgir etirw uoy gnipleh
        ;;chinese
@@ -37,14 +48,14 @@
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        ;;indent-guides     ; highlighted indent columns
        ;;ligatures         ; ligatures and symbols to make your code pretty again
-       minimap           ; show a map of the code on the side
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) minimap) ; show a map of the code on the side
        modeline          ; snazzy, Atom-inspired modeline, plus API
        ;;nav-flash         ; blink cursor line after big motions
        ;;neotree           ; a project drawer, like NERDTree for vim
        ophints           ; highlight the region an operation acts on
        (popup +defaults)   ; tame sudden yet inevitable temporary windows
        ;;tabs              ; a tab bar for Emacs
-       (treemacs +evil +projectile)          ; a project drawer, like neotree but cooler
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (treemacs +evil +projectile))          ; a project drawer, like neotree but cooler
        unicode           ; extended unicode support for various languages
        (vc-gutter +pretty) ; vcs diff in the fringe
        vi-tilde-fringe   ; fringe tildes to mark beyond EOB
@@ -79,7 +90,7 @@
        ;;shell             ; simple shell REPL for Emacs
        ;;term              ; basic terminal emulator for Emacs
        ;;vterm             ; disabled — use ghostel instead
-       ghostel           ; ghostty-based terminal emulator
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) ghostel)           ; ghostty-based terminal emulator
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
@@ -97,15 +108,15 @@
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
        lookup              ; navigate your code and its documentation
-       (lsp +eglot)               ; M-x vscode
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (lsp +eglot))               ; M-x vscode
        magit             ; a git porcelain for Emacs
        ;;make              ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
-       pdf               ; pdf enhancements
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) pdf)               ; pdf enhancements
        ;;prodigy           ; FIXME managing external services & code builders
        ;;terraform         ; infrastructure as code
        ;;tmux              ; an API for interacting with tmux
-       tree-sitter       ; syntax and parsing, sitting in a tree...
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) tree-sitter)       ; syntax and parsing, sitting in a tree...
        ;;upload            ; map local to remote projects via ssh/ftp
 
        :os
@@ -115,7 +126,7 @@
        :lang
        ;;agda              ; types of types of types of types...
        ;;beancount         ; mind the GAAP
-       (cc +lsp)         ; C > C++ == 1
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (cc +lsp))         ; C > C++ == 1
        ;;clojure           ; java with a lisp
        ;;common-lisp       ; if you've seen one lisp, you've seen them all
        ;;coq               ; proofs-as-programs
@@ -140,10 +151,10 @@
        ;;haskell          ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
        ;;idris             ; a language you can depend on
-       json              ; At least it ain't XML
-       (java +lsp)       ; the poster child for carpal tunnel syndrome
-       ( javascript +tree-sitter )        ; all(hope(abandon(ye(who(enter(here))))))
-       tidy
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) json)              ; At least it ain't XML
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (java +lsp))       ; the poster child for carpal tunnel syndrome
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (javascript +tree-sitter))        ; all(hope(abandon(ye(who(enter(here))))))
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) tidy)
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
        latex             ; writing papers in Emacs has never been so fun
@@ -159,23 +170,23 @@
        ;;plantuml          ; diagrams for confusing people more
        ;;graphviz          ; diagrams for confusing yourself even more
        ;;purescript        ; javascript, but functional
-       (python +lsp)           ; beautiful is better than ugly
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (python +lsp))           ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
        ;;rest              ; Emacs as a REST client
        ;;rst               ; ReST in peace
        ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       (rust +lsp)       ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
-       (scala +lsp)             ; java, but good
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (rust +lsp))       ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (scala +lsp))             ; java, but good
        ;;(scheme +guile)   ; a fully conniving family of lisps
-       sh                ; she sells {ba,z,fi}sh shells on the C xor
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) sh)                ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml
        ;;solidity          ; do you need a blockchain? No.
        ;;swift             ; who asked for emoji variables?
        ;;terra             ; Earth and Moon in alignment for performance.
-       (web +lsp +tree-sitter)                ; the tubes
-       yaml              ; JSON, but readable
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) (web +lsp +tree-sitter))                ; the tubes
+       (:if (not (or (getenv "TERMUX_VERSION") (file-exists-p "/data/data/com.termux"))) yaml)              ; JSON, but readable
        ;;zig               ; C, but simpler
 
        :email

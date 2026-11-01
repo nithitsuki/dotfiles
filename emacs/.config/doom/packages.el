@@ -7,26 +7,36 @@
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;; (package! some-package)
-(package! gptel :recipe (:nonrecursive t))
-(package! leetcode)
+;;
+;; NOTE Termux / Android.  This file is shared with a phone running Emacs under
+;;      Termux, where the install is for journaling only.  Packages that need an
+;;      external CLI (pi/opencode, leetcode, typst, jarchive), an npm build
+;;      (org-roam-ui), a graphics-capable terminal (kitty-graphics), or network
+;;      LLM access (gptel) are not declared there.  On the desktop the test is
+;;      false, so every package below is declared exactly as before.
+(unless (or (getenv "TERMUX_VERSION")
+            (file-exists-p "/data/data/com.termux"))
+  (package! gptel :recipe (:nonrecursive t))
+  (package! leetcode)
+  (package! org-roam-ui)
+  ;; Open `jar:file:...' URIs returned by Metals for dependency symbols (M-. into
+  ;; library sources).  See https://scalameta.org/metals/docs/editors/emacs/#eglot
+  (package! jarchive)
+  (package! shell-maker)
+  (package! acp)
+  (package! agent-shell)
+  (package! ox-typst)
+  ;; Kitty graphics protocol / Sixel images for terminal Emacs — GitHub only,
+  ;; not on MELPA.
+  (package! kitty-graphics
+    :recipe (:host github :repo "cashmeredev/kitty-graphics.el")))
+;; Shared packages: pure elisp, no external build step or CLI required.
 (package! org-bullets)
 (package! org-modern)
-(package! org-roam-ui)
 (package! org-super-agenda)
-(package! ox-typst)
 (package! perfect-margin)
 (package! auctex)
 (package! base16-theme)
-;; Open `jar:file:...' URIs returned by Metals for dependency symbols (M-. into
-;; library sources).  See https://scalameta.org/metals/docs/editors/emacs/#eglot
-(package! jarchive)
-(package! shell-maker)
-(package! acp)
-(package! agent-shell)
-;; Kitty graphics protocol / Sixel images for terminal Emacs — GitHub only,
-;; not on MELPA.
-(package! kitty-graphics
-  :recipe (:host github :repo "cashmeredev/kitty-graphics.el"))
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:

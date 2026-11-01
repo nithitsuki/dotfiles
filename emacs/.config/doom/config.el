@@ -1,6 +1,25 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 ;;; ============================================================================
+;;; SHARED DESKTOP / TERMUX CONFIG
+;;; ============================================================================
+
+;; This config is shared between the desktop and a phone running Emacs under
+;; Termux, where the install is for journaling only: no LSP, no language
+;; tooling, no external compilers.  Every guard below is a no-op on the desktop.
+;;
+;; Detection must not depend on `TERMUX_VERSION' alone: Termux only exports it
+;; to shells it starts itself, so an Emacs launched over ssh or from another
+;; app sees a clean environment.  The data directory is the stable signal, and
+;; it is the same test init.el and packages.el inline.
+;;
+;; init.el loads before this file, so it cannot use this variable.  It inlines
+;; that test in its module `:if' forms instead.
+(defvar my/termux-p (or (getenv "TERMUX_VERSION")
+                        (file-exists-p "/data/data/com.termux"))
+  "Non-nil when running inside Termux on Android.")
+
+;;; ============================================================================
 ;;; GENERAL SETTINGS
 ;;; ============================================================================
 
@@ -26,9 +45,14 @@
 ;; SF Mono is macOS-only: without it Emacs errors on every GUI frame with
 ;; "Could not find a font on your system: SF Mono", so substitute an installed
 ;; Nerd Font elsewhere (Windows exposes Nerd Fonts v3's abbreviated names).
-(let ((my/font-family (if (featurep :system 'windows) "JetBrainsMono NFM" "SF Mono")))
-  (setq doom-font (font-spec :family my/font-family :size 14)
-        doom-variable-pitch-font (font-spec :family my/font-family :size 16)))
+;;
+;; Termux has no GUI frames and no fontconfig family of that name; the terminal
+;; supplies the typeface (see ~/.termux/font.ttf).  A `font-spec' there would
+;; only risk an error, so skip the whole block on Termux.
+(unless my/termux-p
+  (let ((my/font-family (if (featurep :system 'windows) "JetBrainsMono NFM" "SF Mono")))
+    (setq doom-font (font-spec :family my/font-family :size 14)
+          doom-variable-pitch-font (font-spec :family my/font-family :size 16))))
 
 ;; Nerd Font icons (doom-modeline's nf-md-* Material Design glyphs, treemacs,
 ;; …).  nerd-icons defaults to "Symbols Nerd Font Mono", which is not
@@ -43,13 +67,19 @@
       (if (featurep :system 'windows)
           "JetBrainsMono NFM"                 ; i.e. "… Nerd Font Mono"
         "JetBrainsMono Nerd Font Mono"))
-(dolist (range '((#xf0000 . #xffffd)        ; Plane 15 PUA — nf-md-*
-                 (#x100000 . #x10fffd)))    ; Plane 16 PUA
-  (set-fontset-font t range nerd-icons-font-family nil 'prepend))
+;; `set-fontset-font' only exists in builds with a GUI font backend, so this
+;; must also be gated on `fboundp' for a terminal-only Emacs.
+(unless (or my/termux-p (not (fboundp 'set-fontset-font)))
+  (dolist (range '((#xf0000 . #xffffd)        ; Plane 15 PUA — nf-md-*
+                   (#x100000 . #x10fffd)))    ; Plane 16 PUA
+    (set-fontset-font t range nerd-icons-font-family nil 'prepend)))
 
-;; Frame transparency
-(add-to-list 'default-frame-alist '(alpha-background . 85))
-(set-frame-parameter nil 'alpha-background 85)
+;; Frame transparency.  Terminal frames have no alpha channel, and Termux's
+;; terminal sets its own background, so skip this there rather than pushing a
+;; frame parameter that cannot apply.
+(unless my/termux-p
+  (add-to-list 'default-frame-alist '(alpha-background . 85))
+  (set-frame-parameter nil 'alpha-background 85))
 
 ;; Terminal transparency — clear bg in non-GUI frames
 (defun on-after-init ()
@@ -60,13 +90,15 @@
 ;; (add-hook 'window-set
 ;;            p-hook #'on-after-init)
 
-;; Centering / margins
-(use-package! perfect-margin
-  :config
-  (after! doom-modeline
-    (setq mode-line-right-align-edge 'right-fringe))
-  (perfect-margin-mode t)
-  (setq perfect-margin-visible-width 98))
+;; Centering / margins.  perfect-margin pads the frame to a fixed visible width,
+;; which on a phone-sized terminal just wastes the few columns available.
+(unless my/termux-p
+  (use-package! perfect-margin
+    :config
+    (after! doom-modeline
+      (setq mode-line-right-align-edge 'right-fringe))
+    (perfect-margin-mode t)
+    (setq perfect-margin-visible-width 98)))
 
 ;;; ============================================================================
 ;;; ORG MODE
@@ -80,17 +112,23 @@
 (after! org
   (setq org-directory "~/Documents/org/")
   ;;(setq org-startup-with-latex-preview t)
-  (setq org-preview-latex-default-process 'dvisvgm)
+  ;; Termux has no TeX toolchain and no dvisvgm, so leave the process and the
+  ;; preview sizing advice alone there (the phone is for journaling).
+  (unless my/termux-p
+    (setq org-preview-latex-default-process 'dvisvgm))
 
   ;; --- inline images -------------------------------------------------------
-  ;; Show linked images inline when a file opens (toggle with the keybind below).
-  (setq org-startup-with-inline-images t)
-  ;; Cap inline-image width so big figures don't blow out the frame.
-  (setq org-image-actual-width 600)
+  ;; Inline images need a graphics-capable frame; on a terminal they are pure
+  ;; overhead, so the phone skips them (the toggle keybind stays available).
+  (unless my/termux-p
+    ;; Show linked images inline when a file opens.
+    (setq org-startup-with-inline-images t)
+    ;; Cap inline-image width so big figures don't blow out the frame.
+    (setq org-image-actual-width 600))
   ;; Keybind: toggle inline images in the current buffer.
   (map! :map org-mode-map
         :localleader
-        "Ti" #'org-toggle-inline-images))
+        "Ti" #'org-toggle-inline-images)
 
   ;; --- LaTeX preview size -------------------------------------------------
   ;; A flat :scale 0.5 made previews tiny.  Fragments are typeset as a 10pt
@@ -126,16 +164,48 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
                (numberp adjust) (> adjust 0))
           (* my/org-latex-preview-magnify
              (/ (* 72.27 px) (* 10.0 dpi adjust)))
-        (* my/org-latex-preview-magnify 1.0)))
+        (* my/org-latex-preview-magnify 1.0))))
 
-  (advice-add 'org-format-latex :before
-              (lambda (&rest _)
-                (plist-put org-format-latex-options
-                           :scale (my/org-latex-preview-scale)))))
+  (unless my/termux-p
+    (advice-add 'org-format-latex :before
+                (lambda (&rest _)
+                  (plist-put org-format-latex-options
+                             :scale (my/org-latex-preview-scale))))))
 ;; --- Agenda ------------------------------------------------------------------
 
 (org-super-agenda-mode 1)
 (setq org-agenda-files (list org-directory))
+
+;; --- Journaling ergonomics (Termux) ------------------------------------------
+;; The phone is a journaling device: one narrow terminal, a soft keyboard, and
+;; no window system.  These settings make org comfortable there.  The block is
+;; skipped on the desktop, so desktop behaviour is unchanged.
+(when my/termux-p
+  ;; `org-directory' is "~/Documents/org/" (set above).  `org-agenda-files'
+  ;; points at the whole directory, so create it now: org signals an error for
+  ;; an agenda directory that does not exist.  An *empty* directory is fine.
+  (make-directory org-directory t)
+  (setq org-startup-indented t
+        org-hide-emphasis-markers t)
+  ;; Long journal sentences must wrap at the frame edge, not scroll off the side
+  ;; of a phone-sized terminal.  `word-wrap' is a `local-variable-if-set', so it
+  ;; needs `setq-default' to reach buffers created later.
+  (setq-default word-wrap t)
+  ;; Doom's org+journal module leaves this relative, and it did not resolve to
+  ;; an existing directory here.  Pin it under `org-directory' and create it so
+  ;; the first `SPC n j j' cannot fail; keep the one-file-per-day naming.
+  (setq org-journal-dir (expand-file-name "journal/" org-directory)
+        org-journal-file-format "%Y%m%d")
+  (make-directory org-journal-dir t)
+  ;; Doom's :os tty module enables `xclip-mode', which needs either Termux:API
+  ;; (`termux-clipboard-get') or `xclip'.  With neither installed it throws at
+  ;; enable time, so turn selections off until one of them exists.
+  (when (not (or (executable-find "termux-clipboard-get")
+                 (executable-find "xclip")))
+    (setq select-enable-clipboard nil
+          select-enable-primary nil))
+  (after! org
+    (add-hook 'org-mode-hook #'visual-line-mode)))
 
 ;; Global super-agenda groups — applies to TODO list, daily agenda, etc.
 (setq org-super-agenda-groups
@@ -333,56 +403,59 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
           (or (map-elt json 'password)
               (map-elt json "password"))))))
 
-(use-package! gptel
-  :config
-  (when-let (env-key (getenv "OPENAI_API_KEY"))
-    (setopt gptel-api-key env-key))
-  ;; Only OpenCode Go and OpenCode Zen are registered here, and only their
-  ;; OpenAI-compatible chat/completions models. Models served over the
-  ;; Responses API (Grok, GPT, Muse Spark) or the Anthropic /messages API
-  ;; (Claude, Gemini, some Qwen/MiniMax) cannot be used by gptel's OpenAI
-  ;; backend and are not registered, so they do not show in the gptel menu.
-  ;; OpenCode Go subscription (https://opencode.ai/docs/go/).
-  (defvar my/gptel-go-backend nil
-    "The gptel backend for the OpenCode Go subscription.")
-  (setq my/gptel-go-backend
-        (gptel-make-openai "OpenCode Go"
-          :host "opencode.ai"
-          :endpoint "/zen/go/v1/chat/completions"
-          :stream t
-          :key #'my/gptel-opencode-api-key
-          :models '(glm-5.3-flash glm-5.3 glm-5.2
-                    kimi-k3 kimi-k2.7-code kimi-k2.6
-                    longcat-2.0 longcat-2.5-preview-free
-                    deepseek-v4.1-flash deepseek-v4-pro deepseek-v4-flash
-                    deepseek-v4-flash-vision-exp
-                    mimo-v2.6-flash mimo-v2.6-pro
-                    mimo-v2.5 mimo-v2.5-pro
-                    hy4-preview hy3
-                    space-bunny-free)))
-  ;; OpenCode Zen - pay-per-use gateway (https://opencode.ai/docs/zen/),
-  ;; same key as Go. Paid models bill against the Zen balance (requests fail
-  ;; with a 401 auth error until credits are added); the free models
-  ;; (deepseek-v4-flash-free, mimo-v2.5-free, ...) are free but their data may
-  ;; be used for model training. Deprecated Zen models are not registered.
-  (gptel-make-openai "Zen"
-    :host "opencode.ai"
-    :endpoint "/zen/v1/chat/completions"
-    :stream t
-    :key #'my/gptel-opencode-api-key
-    :models '(deepseek-v4.1-flash deepseek-v4-pro deepseek-v4-flash
-              deepseek-v4-flash-vision-exp deepseek-v4-flash-free
-              minimax-m3 minimax-m2.7
-              glm-5.3-flash glm-5.3 glm-5.2 glm-5.1
-              kimi-k3 kimi-k2.7-code kimi-k2.6
-              qwen3.8-max
-              big-pickle
-              mimo-v2.6-flash-free mimo-v2.5-free
-              space-bunny-free longcat-2.5-preview-free
-              ling-3.0-flash-fin-free nemotron-3-ultra-free
-              nemotron-3.5-lightning-free))
-  (setq gptel-backend my/gptel-go-backend
-        gptel-model 'deepseek-v4.1-flash))
+;; gptel talks to remote LLM APIs; not part of the journaling setup, and the
+;; package is not declared in packages.el on Termux.
+(unless my/termux-p
+  (use-package! gptel
+    :config
+    (when-let (env-key (getenv "OPENAI_API_KEY"))
+      (setopt gptel-api-key env-key))
+    ;; Only OpenCode Go and OpenCode Zen are registered here, and only their
+    ;; OpenAI-compatible chat/completions models. Models served over the
+    ;; Responses API (Grok, GPT, Muse Spark) or the Anthropic /messages API
+    ;; (Claude, Gemini, some Qwen/MiniMax) cannot be used by gptel's OpenAI
+    ;; backend and are not registered, so they do not show in the gptel menu.
+    ;; OpenCode Go subscription (https://opencode.ai/docs/go/).
+    (defvar my/gptel-go-backend nil
+      "The gptel backend for the OpenCode Go subscription.")
+    (setq my/gptel-go-backend
+          (gptel-make-openai "OpenCode Go"
+            :host "opencode.ai"
+            :endpoint "/zen/go/v1/chat/completions"
+            :stream t
+            :key #'my/gptel-opencode-api-key
+            :models '(glm-5.3-flash glm-5.3 glm-5.2
+                      kimi-k3 kimi-k2.7-code kimi-k2.6
+                      longcat-2.0 longcat-2.5-preview-free
+                      deepseek-v4.1-flash deepseek-v4-pro deepseek-v4-flash
+                      deepseek-v4-flash-vision-exp
+                      mimo-v2.6-flash mimo-v2.6-pro
+                      mimo-v2.5 mimo-v2.5-pro
+                      hy4-preview hy3
+                      space-bunny-free)))
+    ;; OpenCode Zen - pay-per-use gateway (https://opencode.ai/docs/zen/),
+    ;; same key as Go. Paid models bill against the Zen balance (requests fail
+    ;; with a 401 auth error until credits are added); the free models
+    ;; (deepseek-v4-flash-free, mimo-v2.5-free, ...) are free but their data may
+    ;; be used for model training. Deprecated Zen models are not registered.
+    (gptel-make-openai "Zen"
+      :host "opencode.ai"
+      :endpoint "/zen/v1/chat/completions"
+      :stream t
+      :key #'my/gptel-opencode-api-key
+      :models '(deepseek-v4.1-flash deepseek-v4-pro deepseek-v4-flash
+                deepseek-v4-flash-vision-exp deepseek-v4-flash-free
+                minimax-m3 minimax-m2.7
+                glm-5.3-flash glm-5.3 glm-5.2 glm-5.1
+                kimi-k3 kimi-k2.7-code kimi-k2.6
+                qwen3.8-max
+                big-pickle
+                mimo-v2.6-flash-free mimo-v2.5-free
+                space-bunny-free longcat-2.5-preview-free
+                ling-3.0-flash-fin-free nemotron-3-ultra-free
+                nemotron-3.5-lightning-free))
+    (setq gptel-backend my/gptel-go-backend
+          gptel-model 'deepseek-v4.1-flash)))
 
 ;; Doom's `spell +flyspell' module binds [return] in `flyspell-mouse-map', the
 ;; overlay keymap that is active on misspelled words.  Any binding for [return]
@@ -460,121 +533,125 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 (add-to-list 'exec-path (expand-file-name "~/.bun/bin"))
 
 ;; --- agent-shell + agent ACP integrations (pi / opencode / opencode2) ---
-(require 'acp)
-(require 'agent-shell)
-(require 'agent-shell-pi)
-(require 'agent-shell-opencode)
+;; agent-shell drives external ACP agents (pi-acp, opencode, opencode2) that
+;; are not installed on Termux, and the acp / agent-shell packages are not
+;; declared there.  Skip the whole integration.
+(unless my/termux-p
+  (require 'acp)
+  (require 'agent-shell)
+  (require 'agent-shell-pi)
+  (require 'agent-shell-opencode)
 
-;; pi — via the pi-acp ACP adapter (spawns `pi --mode rpc'). Install with:
-;;   bun add -g pi-acp
-(setq agent-shell-pi-acp-command '("pi-acp"))
+  ;; pi — via the pi-acp ACP adapter (spawns `pi --mode rpc'). Install with:
+  ;;   bun add -g pi-acp
+  (setq agent-shell-pi-acp-command '("pi-acp"))
 
-;; opencode (classic, /usr/sbin/opencode) — built-in ACP server.
-(setq agent-shell-opencode-acp-command '("opencode" "acp"))
+  ;; opencode (classic, /usr/sbin/opencode) — built-in ACP server.
+  (setq agent-shell-opencode-acp-command '("opencode" "acp"))
 
-;; opencode2 (beta, ~/.bun/bin/opencode2) — built-in ACP server.
-;; A distinct config so it can coexist with `opencode'.
-(defun my/agent-shell-opencode2-make-agent-config ()
-  "Create an OpenCode2 (beta) agent configuration for agent-shell."
-  (agent-shell-make-agent-config
-   :identifier 'opencode2
-   :mode-line-name "OpenCode2"
-   :buffer-name "OpenCode2"
-   :shell-prompt "OpenCode2> "
-   :shell-prompt-regexp "OpenCode2> "
-   :welcome-function #'agent-shell-opencode--welcome-message
-   :icon-name "opencode.png"
-   :client-maker (lambda (buffer)
-                   (agent-shell--make-acp-client
-                    :command "opencode2"
-                    :command-params '("acp")
-                    :environment-variables nil
-                    :context-buffer buffer))
-   :install-instructions "Install opencode2 with: bun add -g @opencode-ai/cli"))
+  ;; opencode2 (beta, ~/.bun/bin/opencode2) — built-in ACP server.
+  ;; A distinct config so it can coexist with `opencode'.
+  (defun my/agent-shell-opencode2-make-agent-config ()
+    "Create an OpenCode2 (beta) agent configuration for agent-shell."
+    (agent-shell-make-agent-config
+     :identifier 'opencode2
+     :mode-line-name "OpenCode2"
+     :buffer-name "OpenCode2"
+     :shell-prompt "OpenCode2> "
+     :shell-prompt-regexp "OpenCode2> "
+     :welcome-function #'agent-shell-opencode--welcome-message
+     :icon-name "opencode.png"
+     :client-maker (lambda (buffer)
+                     (agent-shell--make-acp-client
+                      :command "opencode2"
+                      :command-params '("acp")
+                      :environment-variables nil
+                      :context-buffer buffer))
+     :install-instructions "Install opencode2 with: bun add -g @opencode-ai/cli"))
 
-;;;###autoload
-(defun my/agent-shell-opencode2-start-agent ()
-  "Start an interactive OpenCode2 agent shell."
-  (interactive)
-  (agent-shell--dwim :config (my/agent-shell-opencode2-make-agent-config)
-                     :new-shell t))
+  ;;;###autoload
+  (defun my/agent-shell-opencode2-start-agent ()
+    "Start an interactive OpenCode2 agent shell."
+    (interactive)
+    (agent-shell--dwim :config (my/agent-shell-opencode2-make-agent-config)
+                       :new-shell t))
 
-;; Restrict the agent picker to this repo's three integrated agents.
-(setq agent-shell-agent-configs
-      (list #'agent-shell-pi-make-agent-config
-            #'agent-shell-opencode-make-agent-config
-            #'my/agent-shell-opencode2-make-agent-config))
+  ;; Restrict the agent picker to this repo's three integrated agents.
+  (setq agent-shell-agent-configs
+        (list #'agent-shell-pi-make-agent-config
+              #'agent-shell-opencode-make-agent-config
+              #'my/agent-shell-opencode2-make-agent-config))
 
-;; Default to pi, but keep the picker so opencode / opencode2 can be
-;; chosen per shell.  For an unconditional pi default use `'pi' instead.
-(setq agent-shell-preferred-agent-config '(preselect . pi))
+  ;; Default to pi, but keep the picker so opencode / opencode2 can be
+  ;; chosen per shell.  For an unconditional pi default use `'pi' instead.
+  (setq agent-shell-preferred-agent-config '(preselect . pi))
 
-;; --- agent-shell evil-mode tweaks (from agent-shell README) ---
-(evil-define-key 'insert agent-shell-mode-map (kbd "RET") #'newline)
-(evil-define-key 'normal agent-shell-mode-map (kbd "RET") #'comint-send-input)
-(add-hook 'diff-mode-hook
-          (lambda ()
-            (when (string-match-p "\\*agent-shell-diff\\*" (buffer-name))
-              (evil-emacs-state))))
+  ;; --- agent-shell evil-mode tweaks (from agent-shell README) ---
+  (evil-define-key 'insert agent-shell-mode-map (kbd "RET") #'newline)
+  (evil-define-key 'normal agent-shell-mode-map (kbd "RET") #'comint-send-input)
+  (add-hook 'diff-mode-hook
+            (lambda ()
+              (when (string-match-p "\\*agent-shell-diff\\*" (buffer-name))
+                (evil-emacs-state))))
 
-;; --- agent-shell: ACP elicitation support (pi ask_user freeform answers) ---
-;; pi-acp asks freeform questions via ACP `elicitation/create'
-;; (UNSTABLE protocol feature). Upstream agent-shell does not handle it yet,
-;; so bridge it here: prompt in the minibuffer, respond accept/decline/cancel.
-(defun my/agent-shell--prompt-elicitation-property (name prop-schema &optional context)
-  "Prompt for elicitation property NAME using PROP-SCHEMA.
+  ;; --- agent-shell: ACP elicitation support (pi ask_user freeform answers) ---
+  ;; pi-acp asks freeform questions via ACP `elicitation/create'
+  ;; (UNSTABLE protocol feature). Upstream agent-shell does not handle it yet,
+  ;; so bridge it here: prompt in the minibuffer, respond accept/decline/cancel.
+  (defun my/agent-shell--prompt-elicitation-property (name prop-schema &optional context)
+    "Prompt for elicitation property NAME using PROP-SCHEMA.
 When CONTEXT is non-nil, prepend it to the prompt."
-  (let* ((type (map-elt prop-schema 'type))
-         (base (or (map-elt prop-schema 'title) (symbol-name name)))
-         (prompt (format "%s%s: " (if context (concat context " — ") "") base))
-         (enum (map-elt prop-schema 'enum))
-         (default (map-elt prop-schema 'default)))
-    (cond
-     (enum (completing-read prompt enum nil nil nil nil default))
-     ((equal type "boolean") (yes-or-no-p prompt))
-     ((member type '("number" "integer")) (read-number prompt default))
-     ((equal type "array") (read-string prompt (when (and default (listp default))
-                                                 (string-join default ","))))
-     (t (read-string prompt default)))))
+    (let* ((type (map-elt prop-schema 'type))
+           (base (or (map-elt prop-schema 'title) (symbol-name name)))
+           (prompt (format "%s%s: " (if context (concat context " — ") "") base))
+           (enum (map-elt prop-schema 'enum))
+           (default (map-elt prop-schema 'default)))
+      (cond
+       (enum (completing-read prompt enum nil nil nil nil default))
+       ((equal type "boolean") (yes-or-no-p prompt))
+       ((member type '("number" "integer")) (read-number prompt default))
+       ((equal type "array") (read-string prompt (when (and default (listp default))
+                                                   (string-join default ","))))
+       (t (read-string prompt default)))))
 
-(defun my/agent-shell--handle-elicitation (acp-request state)
-  "Handle ACP ELICITATION-REQUEST with STATE via minibuffer prompts."
-  (let* ((params (map-elt acp-request 'params))
-         (mode (map-elt params 'mode))
-         (message (map-elt params 'message))
-         (schema (map-elt params 'requestedSchema))
-         (client (map-elt state :client))
-         (request-id (map-elt acp-request 'id))
-         (respond (lambda (result)
-                    (acp-send-response
-                     :client client
-                     :response (list (cons :request-id request-id)
-                                     (cons :result result))))))
-    (condition-case err
-        (if (not (equal mode "form"))
-            (funcall respond (list (cons 'action "decline")))
-          (let* ((properties (map-elt schema 'properties))
-                 (first (car properties))
-                 (content
-                  (mapcar (lambda (prop-entry)
-                            (cons (car prop-entry)
-                                  (my/agent-shell--prompt-elicitation-property
-                                   (car prop-entry) (cdr prop-entry)
-                                   (and (eq prop-entry first) message))))
-                          properties)))
-            (funcall respond (list (cons 'action "accept")
-                                   (cons 'content content)))))
-      (quit
-       (funcall respond (list (cons 'action "cancel")))))))
+  (defun my/agent-shell--handle-elicitation (acp-request state)
+    "Handle ACP ELICITATION-REQUEST with STATE via minibuffer prompts."
+    (let* ((params (map-elt acp-request 'params))
+           (mode (map-elt params 'mode))
+           (message (map-elt params 'message))
+           (schema (map-elt params 'requestedSchema))
+           (client (map-elt state :client))
+           (request-id (map-elt acp-request 'id))
+           (respond (lambda (result)
+                      (acp-send-response
+                       :client client
+                       :response (list (cons :request-id request-id)
+                                       (cons :result result))))))
+      (condition-case err
+          (if (not (equal mode "form"))
+              (funcall respond (list (cons 'action "decline")))
+            (let* ((properties (map-elt schema 'properties))
+                   (first (car properties))
+                   (content
+                    (mapcar (lambda (prop-entry)
+                              (cons (car prop-entry)
+                                    (my/agent-shell--prompt-elicitation-property
+                                     (car prop-entry) (cdr prop-entry)
+                                     (and (eq prop-entry first) message))))
+                            properties)))
+              (funcall respond (list (cons 'action "accept")
+                                     (cons 'content content)))))
+        (quit
+         (funcall respond (list (cons 'action "cancel")))))))
 
-(defun my/agent-shell--on-request-around (orig-fn &rest args)
-  "Handle `elicitation/create' requests in ARGS; otherwise call ORIG-FN."
-  (let ((acp-request (plist-get args :acp-request)))
-    (if (equal (map-elt acp-request 'method) "elicitation/create")
-        (my/agent-shell--handle-elicitation acp-request (plist-get args :state))
-      (apply orig-fn args))))
+  (defun my/agent-shell--on-request-around (orig-fn &rest args)
+    "Handle `elicitation/create' requests in ARGS; otherwise call ORIG-FN."
+    (let ((acp-request (plist-get args :acp-request)))
+      (if (equal (map-elt acp-request 'method) "elicitation/create")
+          (my/agent-shell--handle-elicitation acp-request (plist-get args :state))
+        (apply orig-fn args))))
 
-(advice-add 'agent-shell--on-request :around #'my/agent-shell--on-request-around)
+  (advice-add 'agent-shell--on-request :around #'my/agent-shell--on-request-around))
 
 ;;; ============================================================================
 ;;; LSP / SCALA
@@ -589,43 +666,49 @@ When CONTEXT is non-nil, prepend it to the prompt."
 ;; Metals returns `jar:file:...' URIs for symbols defined in dependencies.
 ;; Without jarchive, Emacs has no file-name-handler for them and M-. cannot open
 ;; the source.  See https://scalameta.org/metals/docs/editors/emacs/#eglot
-(after! eglot
-  (require 'jarchive nil t)
-  (when (fboundp 'jarchive-mode)
-    (jarchive-mode 1)))
+;; Language-server setup (eglot + Metals + Scala) has no meaning on the phone:
+;; no LSP, no JVM, no scala-mode.  The desktop path is unchanged.
+(unless my/termux-p
+  (after! eglot
+    (require 'jarchive nil t)
+    (when (fboundp 'jarchive-mode)
+      (jarchive-mode 1)))
 
-;; Make Corfu pop up on the characters Metals uses as completion triggers
-;; (member access and string interpolators).  `corfu-auto-trigger' is a global
-;; variable, so set it buffer-locally to keep `{` from opening the popup in
-;; other major modes.  See the same Metals page, "Automatic completion inside
-;; string interpolators".
-(after! scala-mode
-  (add-hook 'scala-mode-hook
-            (lambda () (setq-local corfu-auto-trigger ".${"))))
+  ;; Make Corfu pop up on the characters Metals uses as completion triggers
+  ;; (member access and string interpolators).  `corfu-auto-trigger' is a global
+  ;; variable, so set it buffer-locally to keep `{` from opening the popup in
+  ;; other major modes.  See the same Metals page, "Automatic completion inside
+  ;; string interpolators".
+  (after! scala-mode
+    (add-hook 'scala-mode-hook
+              (lambda () (setq-local corfu-auto-trigger ".${"))))
 
-;; Metals runs in its own JVM.  The Arch launcher's defaults omit GC tuning, so
-;; supply Metals' recommended options (G1GC + string dedup) while keeping its 25%
-;; RAM cap.  `setenv' updates `process-environment', which the process eglot
-;; spawns inherits.  Takes effect the next time a Metals server starts.
-(setenv "METALS_JAVA_OPTS"
-        (mapconcat #'identity
-                   '("-XX:+UseG1GC"
-                     "-XX:+UseStringDeduplication"
-                     "-Xss4m"
-                     "-Xms100m"
-                     "-XX:MaxRAMPercentage=25.0")
-                   " "))
+  ;; Metals runs in its own JVM.  The Arch launcher's defaults omit GC tuning, so
+  ;; supply Metals' recommended options (G1GC + string dedup) while keeping its 25%
+  ;; RAM cap.  `setenv' updates `process-environment', which the process eglot
+  ;; spawns inherits.  Takes effect the next time a Metals server starts.
+  (setenv "METALS_JAVA_OPTS"
+          (mapconcat #'identity
+                     '("-XX:+UseG1GC"
+                       "-XX:+UseStringDeduplication"
+                       "-Xss4m"
+                       "-Xms100m"
+                       "-XX:MaxRAMPercentage=25.0")
+                     " ")))
 
 ;;; ============================================================================
 ;;; LEETCODE
 ;;; ============================================================================
 
-(use-package! leetcode
-  :config
-  (setq leetcode-prefer-language "rust")
-  (setq leetcode-prefer-sql "mysql")
-  (setq leetcode-save-solutions t)
-  (setq leetcode-directory "~/Projects/lc-solves"))
+;; The LeetCode package talks to an external judge and needs network + a login;
+;; it is not part of the journaling setup.
+(unless my/termux-p
+  (use-package! leetcode
+    :config
+    (setq leetcode-prefer-language "rust")
+    (setq leetcode-prefer-sql "mysql")
+    (setq leetcode-save-solutions t)
+    (setq leetcode-directory "~/Projects/lc-solves")))
 
 ;;; ============================================================================
 ;;; TERMINAL GRAPHICS (kitty-graphics) & GHOSTTY TERMINAL EMULATOR (ghostel)
@@ -638,11 +721,14 @@ When CONTEXT is non-nil, prepend it to the prompt."
 ;; enabling to the first `emacsclient -t' frame and detects every later client,
 ;; so calling it unconditionally is safe.  In org: C-c C-x C-v toggles inline
 ;; images, C-c C-x C-l previews LaTeX fragments.
-(use-package! kitty-graphics
-  :config
-  (when (executable-find "mpv")
-    (setq kitty-graphics-enable-video t)) ; inline video playback (mpv 0.36+)
-  (kitty-graphics-setup))
+;; The package is not declared in packages.el on Termux (see the note there),
+;; and Termux's terminal speaks neither the Kitty graphics protocol nor Sixel.
+(unless my/termux-p
+  (use-package! kitty-graphics
+    :config
+    (when (executable-find "mpv")
+      (setq kitty-graphics-enable-video t)) ; inline video playback (mpv 0.36+)
+    (kitty-graphics-setup)))
 
 ;; ghostel — terminal emulator powered by libghostty-vt, the VT engine behind
 ;; Ghostty.  True color, Kitty keyboard/graphics protocols, hyperlinks, shell
@@ -654,9 +740,12 @@ When CONTEXT is non-nil, prepend it to the prompt."
 ;; hook, popup rules, and the vterm-compatible leader keys: `SPC o t' toggles
 ;; a project-root ghostel popup, `SPC o T' opens a terminal in the current
 ;; window.
-(map! :leader
-      :desc "Ghostel terminal"         "o g" #'ghostel
-      :desc "Ghostel project terminal" "o G" #'ghostel-project)
+;; Not available on Termux: the `:term ghostel' module is dropped there (see
+;; init.el), so the commands would be void.
+(unless my/termux-p
+  (map! :leader
+        :desc "Ghostel terminal"         "o g" #'ghostel
+        :desc "Ghostel project terminal" "o G" #'ghostel-project))
 
 ;;; ============================================================================
 ;;; KITTY KEYBOARD PROTOCOL (kkp) — daemon workaround
@@ -682,75 +771,79 @@ When CONTEXT is non-nil, prepend it to the prompt."
 ;; this terminal", and ESC must leave insert state on the first press.
 ;;
 ;; This is version-specific by nature -- drop it once kkp handles daemons itself.
-(declare-function kkp-setup-function-keys "kkp" (terminal))
-(declare-function kkp--calculate-flags-integer "kkp" nil)
-(declare-function kkp--csi-escape "kkp" (&rest args))
-(declare-function kkp--make-state "kkp" (&rest args))
-(declare-function kkp--process-keys "kkp" (prefix))
-(declare-function kkp--query-terminal-sync "kkp" (query &optional terminator))
-(declare-function kkp--reply-flags "kkp" (reply))
-(declare-function kkp--reply-indicates-support-p "kkp" (reply))
-(declare-function kkp--terminal-teardown "kkp" (terminal))
+;; The kitty keyboard protocol workaround below exists for kitty and Ghostty
+;; terminals reached through emacsclient -t frames.  Termux talks to an
+;; ordinary Android terminal, so skip it there.
+(unless my/termux-p
+  (declare-function kkp-setup-function-keys "kkp" (terminal))
+  (declare-function kkp--calculate-flags-integer "kkp" nil)
+  (declare-function kkp--csi-escape "kkp" (&rest args))
+  (declare-function kkp--make-state "kkp" (&rest args))
+  (declare-function kkp--process-keys "kkp" (prefix))
+  (declare-function kkp--query-terminal-sync "kkp" (query &optional terminator))
+  (declare-function kkp--reply-flags "kkp" (reply))
+  (declare-function kkp--reply-indicates-support-p "kkp" (reply))
+  (declare-function kkp--terminal-teardown "kkp" (terminal))
 
-(defun +kkp-setup-on-client-frame (frame)
-  "Schedule the kkp setup for a new tty client frame."
-  (when (and (not (display-graphic-p frame))
-             (not (frame-parameter frame 'parent-frame))
-             (require 'kkp nil t))
-    (run-with-timer 1.0 nil #'+kkp-setup-terminal frame)))
+  (defun +kkp-setup-on-client-frame (frame)
+    "Schedule the kkp setup for a new tty client frame."
+    (when (and (not (display-graphic-p frame))
+               (not (frame-parameter frame 'parent-frame))
+               (require 'kkp nil t))
+      (run-with-timer 1.0 nil #'+kkp-setup-terminal frame)))
 
-;; In a daemon, suppress kkp's own asynchronous attempt: it cannot read the
-;; terminal's reply while the client frame is initializing, so it fails its match
-;; test, leaves "setup already in progress" set, and can let the reply leak into a
-;; buffer as keys (upstream issues #21/#32).  Non-daemon tty sessions keep the
-;; stock path, which works there.
-(defun +kkp-skip-async-in-daemon (fn &rest args)
-  "Call FN with ARGS, except inside a daemon (see the synchronous path below)."
-  (unless (daemonp)
-    (apply fn args)))
+  ;; In a daemon, suppress kkp's own asynchronous attempt: it cannot read the
+  ;; terminal's reply while the client frame is initializing, so it fails its match
+  ;; test, leaves "setup already in progress" set, and can let the reply leak into a
+  ;; buffer as keys (upstream issues #21/#32).  Non-daemon tty sessions keep the
+  ;; stock path, which works there.
+  (defun +kkp-skip-async-in-daemon (fn &rest args)
+    "Call FN with ARGS, except inside a daemon (see the synchronous path below)."
+    (unless (daemonp)
+      (apply fn args)))
 
-(advice-add 'kkp-enable-in-terminal :around #'+kkp-skip-async-in-daemon)
+  (advice-add 'kkp-enable-in-terminal :around #'+kkp-skip-async-in-daemon)
 
-(defun +kkp-setup-terminal (frame)
-  "Set up the kitty keyboard protocol for FRAME's terminal, synchronously."
-  (when (and (frame-live-p frame) (not (display-graphic-p frame)))
-    (with-selected-frame frame
-      (let* ((terminal (frame-terminal frame))
-             (reply (condition-case nil
-                        (kkp--query-terminal-sync "?u" ?u)
-                      (error nil))))
-        (when (and reply (kkp--reply-indicates-support-p reply))
-          (kkp--terminal-teardown terminal)
-          (set-terminal-parameter terminal 'kkp--state (kkp--make-state))
-          (+kkp-enable-terminal terminal))))))
+  (defun +kkp-setup-terminal (frame)
+    "Set up the kitty keyboard protocol for FRAME's terminal, synchronously."
+    (when (and (frame-live-p frame) (not (display-graphic-p frame)))
+      (with-selected-frame frame
+        (let* ((terminal (frame-terminal frame))
+               (reply (condition-case nil
+                          (kkp--query-terminal-sync "?u" ?u)
+                        (error nil))))
+          (when (and reply (kkp--reply-indicates-support-p reply))
+            (kkp--terminal-teardown terminal)
+            (set-terminal-parameter terminal 'kkp--state (kkp--make-state))
+            (+kkp-enable-terminal terminal))))))
 
-(defun +kkp-enable-terminal (terminal)
-  "Push the protocol flags to TERMINAL and install kkp's decode maps."
-  (let ((wanted (kkp--calculate-flags-integer)))
-    (when (and (integerp wanted) (> wanted 0))
-      (send-string-to-terminal (format "\e[>%su" wanted) terminal)
-      (when (fboundp 'kkp--flush-standard-output)
-        (kkp--flush-standard-output))
-      (let* ((reply (condition-case nil
-                        (kkp--query-terminal-sync "?u" ?u)
-                      (error nil)))
-             (active (or (and reply (kkp--reply-flags reply)) wanted)))
-        ;; Record the terminal as active via a fresh state: the accessor setters do
-        ;; not exist when this file is evaluated before kkp is loaded, but the
-        ;; constructor does.  (The decoder does not consult it, so a failure here
-        ;; costs nothing but teardown bookkeeping.)
-        (condition-case nil
-            (set-terminal-parameter terminal 'kkp--state
-                                    (kkp--make-state :enhancements active))
-          (error nil))
-        (kkp-setup-function-keys terminal)
-        (dolist (target (frames-on-display-list terminal))
-          (with-selected-frame target
-            (normal-erase-is-backspace-mode 1)
-            (dolist (prefix kkp--key-prefixes)
-              (define-key input-decode-map (kkp--csi-escape (string prefix))
-                          (lambda (_prompt) (kkp--process-keys prefix))))
-            (run-hooks 'kkp-terminal-setup-complete-hook)))
-        active))))
+  (defun +kkp-enable-terminal (terminal)
+    "Push the protocol flags to TERMINAL and install kkp's decode maps."
+    (let ((wanted (kkp--calculate-flags-integer)))
+      (when (and (integerp wanted) (> wanted 0))
+        (send-string-to-terminal (format "\e[>%su" wanted) terminal)
+        (when (fboundp 'kkp--flush-standard-output)
+          (kkp--flush-standard-output))
+        (let* ((reply (condition-case nil
+                          (kkp--query-terminal-sync "?u" ?u)
+                        (error nil)))
+               (active (or (and reply (kkp--reply-flags reply)) wanted)))
+          ;; Record the terminal as active via a fresh state: the accessor setters do
+          ;; not exist when this file is evaluated before kkp is loaded, but the
+          ;; constructor does.  (The decoder does not consult it, so a failure here
+          ;; costs nothing but teardown bookkeeping.)
+          (condition-case nil
+              (set-terminal-parameter terminal 'kkp--state
+                                      (kkp--make-state :enhancements active))
+            (error nil))
+          (kkp-setup-function-keys terminal)
+          (dolist (target (frames-on-display-list terminal))
+            (with-selected-frame target
+              (normal-erase-is-backspace-mode 1)
+              (dolist (prefix kkp--key-prefixes)
+                (define-key input-decode-map (kkp--csi-escape (string prefix))
+                            (lambda (_prompt) (kkp--process-keys prefix))))
+              (run-hooks 'kkp-terminal-setup-complete-hook)))
+          active))))
 
-(add-hook 'after-make-frame-functions #'+kkp-setup-on-client-frame)
+  (add-hook 'after-make-frame-functions #'+kkp-setup-on-client-frame))
