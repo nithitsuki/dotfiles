@@ -19,6 +19,17 @@
                         (file-exists-p "/data/data/com.termux"))
   "Non-nil when running inside Termux on Android.")
 
+;; Org lives in the folder Syncthing shares with the desktop.  On Android that
+;; is the FUSE view of shared storage, which is only readable once Termux has
+;; "All files access"; fall back to private storage so Emacs still starts if it
+;; does not.
+(defvar my/org-directory
+  (let ((shared "/storage/emulated/0/Documents/org/"))
+    (if (and my/termux-p (file-directory-p shared))
+        shared
+      "~/Documents/org/"))
+  "Directory holding org files on this machine.")
+
 ;;; ============================================================================
 ;;; GENERAL SETTINGS
 ;;; ============================================================================
@@ -110,7 +121,7 @@
 
 ;;; org-directory for agenda and stuff
 (after! org
-  (setq org-directory "~/Documents/org/")
+  (setq org-directory my/org-directory)
   ;;(setq org-startup-with-latex-preview t)
   ;; Termux has no TeX toolchain and no dvisvgm, so leave the process and the
   ;; preview sizing advice alone there (the phone is for journaling).
@@ -181,10 +192,10 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 ;; no window system.  These settings make org comfortable there.  The block is
 ;; skipped on the desktop, so desktop behaviour is unchanged.
 (when my/termux-p
-  ;; `org-directory' is "~/Documents/org/" (set above).  `org-agenda-files'
-  ;; points at the whole directory, so create it now: org signals an error for
-  ;; an agenda directory that does not exist.  An *empty* directory is fine.
-  (make-directory org-directory t)
+  ;; `org-directory' is the Syncthing-shared folder (see `my/org-directory').
+  ;; `org-agenda-files' points at the whole directory, so create it now: org
+  ;; signals an error for an agenda directory that does not exist.
+  (make-directory my/org-directory t)
   (setq org-startup-indented t
         org-hide-emphasis-markers t)
   ;; Long journal sentences must wrap at the frame edge, not scroll off the side
@@ -192,11 +203,19 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
   ;; needs `setq-default' to reach buffers created later.
   (setq-default word-wrap t)
   ;; Doom's org+journal module leaves this relative, and it did not resolve to
-  ;; an existing directory here.  Pin it under `org-directory' and create it so
-  ;; the first `SPC n j j' cannot fail; keep the one-file-per-day naming.
-  (setq org-journal-dir (expand-file-name "journal/" org-directory)
+  ;; an existing directory here.  Pin it under the org directory and create it
+  ;; so the first `SPC n j j' cannot fail; keep the one-file-per-day naming.
+  (setq org-journal-dir (expand-file-name "journal/" my/org-directory)
         org-journal-file-format "%Y%m%d")
   (make-directory org-journal-dir t)
+  ;; Shared storage is a FUSE mount watched by Syncthing: lock files would sync
+  ;; as clutter or conflicts, and autosaves/backups belong on private storage.
+  (setq create-lockfiles nil
+        backup-by-copying t
+        backup-directory-alist
+        `(("." . ,(expand-file-name "backups/" doom-local-dir)))
+        auto-save-file-name-transforms
+        `((".*" ,(expand-file-name "auto-save/" doom-local-dir) t)))
   ;; Doom's :os tty module enables `xclip-mode', which needs either Termux:API
   ;; (`termux-clipboard-get') or `xclip'.  With neither installed it throws at
   ;; enable time, so turn selections off until one of them exists.
