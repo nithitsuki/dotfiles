@@ -187,6 +187,14 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 (org-super-agenda-mode 1)
 (setq org-agenda-files (list org-directory))
 
+;; `org-journal-date-format' and `org-journal-search-result-date-format' both
+;; default to "%A, %x", and `%x' follows the locale, so a LANG=C.UTF-8 machine
+;; renders "Monday, 11/02/26" instead of the four digit year.  Pin both so
+;; headings and search results are stable on every machine.
+(after! org-journal
+  (setq org-journal-date-format "%A, %m/%d/%Y"
+        org-journal-search-result-date-format "%A, %m/%d/%Y"))
+
 ;; --- Journaling ergonomics (Termux) ------------------------------------------
 ;; The phone is a journaling device: one narrow terminal, a soft keyboard, and
 ;; no window system.  These settings make org comfortable there.  The block is
@@ -368,7 +376,7 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 
 (setq org-capture-templates
       '(("j" "Journal Entry"
-         entry (file+datetree "~/Documents/org/Jounral.org")
+         entry (file+datetree "~/Documents/org/Journal.org")
          "* Event: %?\n\n  %i\n\n  From: %a"
          :empty-lines 1)))
 
