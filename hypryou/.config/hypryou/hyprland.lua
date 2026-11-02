@@ -36,9 +36,19 @@ hl.monitor({
 -- QT_AUTO_SCREEN_SCALE_FACTOR=1, so no toolkit compensation is needed here.
 hl.config({
     xwayland = {
-        force_zero_scaling = true,
+        force_zero_scaling = false,
     },
 })
+
+-- Steam has no native Wayland UI. It runs under XWayland, so force_zero_scaling
+-- makes it draw at 1x and it comes out tiny. Tell Steam to draw its own UI at
+-- 2x to match the eDP-1 scale. Steam redraws the UI at 2x, so it stays sharp.
+-- This changes the Steam client only, not the games.
+--
+-- The Steam GTK file dialogs need GDK_SCALE=2. That variable is not safe for
+-- all XWayland apps, so it lives in the per-user desktop override at
+-- ~/.local/share/applications/steam.desktop.
+hl.env("STEAM_FORCE_DESKTOPUI_SCALING", "2")
 
 --------------------
 -- OLED CARE -----

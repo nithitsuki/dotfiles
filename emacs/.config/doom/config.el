@@ -702,6 +702,31 @@ When CONTEXT is non-nil, prepend it to the prompt."
     (add-hook 'scala-mode-hook
               (lambda () (setq-local corfu-auto-trigger ".${"))))
 
+  ;;; --- Java: eglot + JDTLS -------------------------------------------------
+  ;; Doom's `:lang java +lsp' only wires up an auto-start hook in lsp-mode
+  ;; mode (lang/java/+lsp.el is guarded to `:tools lsp -eglot').  Under
+  ;; eglot we have to register the jdtls command and hook `lsp!' ourselves.
+  ;; jdtls's default `-data' is derived from the basename of the cwd, which
+  ;; collides between projects sharing a directory name, so pin a per-project
+  ;; data directory here.
+  (after! eglot
+    (defun my/jdtls--command (&optional _interactive project)
+      "Return a jdtls contact list with a project-unique `-data' dir."
+      (let* ((root (if (and project (fboundp 'project-root))
+                       (ignore-errors (project-root project))
+                     default-directory))
+             (data (expand-file-name
+                    (concat "jdtls-" (md5 (or root default-directory)))
+                    (expand-file-name "~/.cache/jdtls"))))
+        (make-directory (file-name-directory data) t)
+        (list "jdtls" "-data" data)))
+    (setf (alist-get '(java-mode java-ts-mode) eglot-server-programs
+                     nil nil #'equal)
+          #'my/jdtls--command))
+
+  (add-hook 'java-mode-local-vars-hook #'lsp! 'append)
+  (add-hook 'java-ts-mode-local-vars-hook #'lsp! 'append)
+
   ;; Metals runs in its own JVM.  The Arch launcher's defaults omit GC tuning, so
   ;; supply Metals' recommended options (G1GC + string dedup) while keeping its 25%
   ;; RAM cap.  `setenv' updates `process-environment', which the process eglot

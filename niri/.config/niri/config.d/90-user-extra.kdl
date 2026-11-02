@@ -49,6 +49,14 @@ output "HDMI-A-1" {
     scale 1.5
 }
 
+// Laptop panel: Yoga 7 14IAL7, Samsung 2880x1800 eDP-1, scale 2 (1440x900 logical).
+// Battery tuning: 60 Hz instead of 90 Hz. A slower refresh lowers panel and GPU power.
+// Reverted to native resolution at your request. Change to "2880x1800@90.001" for 90 Hz.
+output "eDP-1" {
+    mode "2880x1800@60.001"
+    scale 2
+}
+
 // Ported HyprYou muscle-memory binds (Alt = mainMod).
 // iNiR's own binds live in 70-binds.kdl and use Super — nothing below clashes.
 binds {
@@ -184,18 +192,26 @@ binds {
 
     // Ctrl variants of directional moves (same targets, extra chord)
     Alt+Ctrl+Shift+H { move-column-left; }
-    Alt+Ctrl+Shift+J { move-window-down-or-to-workspace-down; }
-    Alt+Ctrl+Shift+K { move-window-up-or-to-workspace-up; }
+    Alt+Ctrl+Shift+J { move-column-to-workspace-down; }
+    Alt+Ctrl+Shift+K { move-column-to-workspace-up; }
     Alt+Ctrl+Shift+L { move-column-right; }
 }
 
 // Sticky named workspace for the Alt+Ctrl+D binds above.
 workspace "D"
 
-// Steam runs XWayland with fixed-size dialogs: float it instead of tiling.
+// Steam dialogs are fixed-size XWayland windows: keep them floating.
+// The main library window ("Steam") stays tiled so Niri constrains its
+// height to the column instead of overflowing the 1440x900 logical output.
 window-rule {
     match app-id=r#"[Ss]team"#
     open-floating true
+}
+
+// Main Steam window: tile it (overrides the float above).
+window-rule {
+    match app-id=r#"[Ss]team"# title="^Steam$"
+    open-floating false
 }
 
 // Every new window opens at maximum column width instead of the 1/2 default.

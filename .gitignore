@@ -10,3 +10,5 @@ hypryou/.config/hypryou/settings.json
 .pi-subagents/
 # hypr-lens install output (third-party QML, refreshed by hypr-lens-install.sh)
 quickshell/.config/quickshell/hypr-lens/
+# iNiR shell source (installed and updated by the iNiR setup, not hand-managed)
+quickshell/.config/quickshell/inir/

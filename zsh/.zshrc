@@ -113,3 +113,11 @@ export PATH=$PATH:/opt/rtems/7/bin
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
 
 export PATH="/home/nithilan/.pixi/bin:$PATH"
+
+# Unity CLI
+case ":${PATH}:" in *:"$HOME/.local/bin":*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac
+
+# Fish-like: suggestions as you type (ghost text, accept with right-arrow).
+# NOTE: zsh-autocomplete deliberately not sourced — its live menu is laggy;
+# plain compinit menu-select above plus autosuggestions is the fast setup.
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh 2>/dev/null

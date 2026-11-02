@@ -22,3 +22,13 @@ alias er='systemctl --user restart emacs.service'
 # (-r/-R, -f, -d, -i, -v), so `rm -rf`, `rm -fv`, etc. keep working.
 # Bypass with `\rm`, `command rm`, or `sudo rm` for a real delete.
 alias rm='trash-put'
+
+# MATLAB's bundled Qt6 ships no Wayland plugin, so it aborts when
+# QT_QPA_PLATFORM=wayland (set globally for the desktop). Force XWayland and
+# drop system Qt theming so MATLAB never loads distro Qt plugins.
+matlab() {
+  QT_QPA_PLATFORM=xcb \
+  QT_QPA_PLATFORMTHEME= \
+  QT_STYLE_OVERRIDE= \
+  command matlab "$@"
+}
