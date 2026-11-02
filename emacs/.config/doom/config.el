@@ -191,8 +191,8 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 ;; One file, org's standard datetree, appended by `org-capture' (template "j").
 ;; `org-journal' cannot do this: it parses the date out of each filename.
 (setq org-capture-templates
-      '(("j" "Journal Entry" entry
-         (file+olp+datetree "~/Documents/org/Journal.org")
+      `(("j" "Journal Entry" entry
+         (file+olp+datetree ,(expand-file-name "Journal.org" my/org-directory))
          "* %<%H:%M>\n%?"
          :empty-lines 1)))
 
