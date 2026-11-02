@@ -187,13 +187,14 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 (org-super-agenda-mode 1)
 (setq org-agenda-files (list org-directory))
 
-;; `org-journal-date-format' and `org-journal-search-result-date-format' both
-;; default to "%A, %x", and `%x' follows the locale, so a LANG=C.UTF-8 machine
-;; renders "Monday, 11/02/26" instead of the four digit year.  Pin both so
-;; headings and search results are stable on every machine.
-(after! org-journal
-  (setq org-journal-date-format "%A, %m/%d/%Y"
-        org-journal-search-result-date-format "%A, %m/%d/%Y"))
+;; --- Journaling --------------------------------------------------------------
+;; One file, org's standard datetree, appended by `org-capture' (template "j").
+;; `org-journal' cannot do this: it parses the date out of each filename.
+(setq org-capture-templates
+      '(("j" "Journal Entry" entry
+         (file+datetree "~/Documents/org/Journal.org")
+         "* %<%H:%M>\n%?"
+         :empty-lines 1)))
 
 ;; --- Journaling ergonomics (Termux) ------------------------------------------
 ;; The phone is a journaling device: one narrow terminal, a soft keyboard, and
@@ -210,12 +211,6 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
   ;; of a phone-sized terminal.  `word-wrap' is a `local-variable-if-set', so it
   ;; needs `setq-default' to reach buffers created later.
   (setq-default word-wrap t)
-  ;; Doom's org+journal module leaves this relative, and it did not resolve to
-  ;; an existing directory here.  Pin it under the org directory and create it
-  ;; so the first `SPC n j j' cannot fail; keep the one-file-per-day naming.
-  (setq org-journal-dir (expand-file-name "journal/" my/org-directory)
-        org-journal-file-format "%Y%m%d")
-  (make-directory org-journal-dir t)
   ;; Shared storage is a FUSE mount watched by Syncthing: lock files would sync
   ;; as clutter or conflicts, and autosaves/backups belong on private storage.
   (setq create-lockfiles nil
@@ -374,13 +369,10 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
        :desc "XL (Epic)"     "X" (lambda () (interactive) (org-toggle-tag "XL"))
        :desc "XXL(Massive)"  "z" (lambda () (interactive) (org-toggle-tag "XXL"))))
 
-;; --- Capture templates -------------------------------------------------------
-
-(setq org-capture-templates
-      '(("j" "Journal Entry"
-         entry (file+datetree "~/Documents/org/Journal.org")
-         "* Event: %?\n\n  %i\n\n  From: %a"
-         :empty-lines 1)))
+;; --- Journal keybinding ------------------------------------------------------
+;; Org-capture's stock template does the work; this just keeps the key the old
+;; org-journal entry used.
+(map! :leader "n j j" (cmd! (org-capture nil "j")))
 
 ;; --- Org packages ------------------------------------------------------------
 
