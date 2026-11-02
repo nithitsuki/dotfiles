@@ -196,6 +196,20 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
          "* %<%H:%M>\n%?"
          :empty-lines 1)))
 
+;; The home-screen shortcut asks for this to be set before starting a capture;
+;; finishing or aborting then closes the client frame so the phone goes back to
+;; the launcher instead of leaving a terminal open.
+(defvar my/capture-return-home nil
+  "When non-nil, delete the client frame after a journal capture.")
+
+(defun my/journal-capture-finish (&rest _)
+  (when my/capture-return-home
+    (setq my/capture-return-home nil)
+    (delete-frame)))
+
+(advice-add 'org-capture-finalize :after #'my/journal-capture-finish)
+(advice-add 'org-capture-kill :after #'my/journal-capture-finish)
+
 ;; --- Journaling ergonomics (Termux) ------------------------------------------
 ;; The phone is a journaling device: one narrow terminal, a soft keyboard, and
 ;; no window system.  These settings make org comfortable there.  The block is
