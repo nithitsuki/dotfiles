@@ -82,8 +82,10 @@ binds {
 
     // Move (HJKL only, no Alt+Shift+arrows)
     Alt+Shift+H { move-column-left; }
-    Alt+Shift+J { move-window-down; }
-    Alt+Shift+K { move-window-up; }
+    // J/K: reorder inside a stacked column, else fall through to the
+    // workspace below/above (single-window columns are the norm here).
+    Alt+Shift+J { move-window-down-or-to-workspace-down; }
+    Alt+Shift+K { move-window-up-or-to-workspace-up; }
     Alt+Shift+L { move-column-right; }
 
     // Workspaces
@@ -182,8 +184,8 @@ binds {
 
     // Ctrl variants of directional moves (same targets, extra chord)
     Alt+Ctrl+Shift+H { move-column-left; }
-    Alt+Ctrl+Shift+J { move-window-down; }
-    Alt+Ctrl+Shift+K { move-window-up; }
+    Alt+Ctrl+Shift+J { move-window-down-or-to-workspace-down; }
+    Alt+Ctrl+Shift+K { move-window-up-or-to-workspace-up; }
     Alt+Ctrl+Shift+L { move-column-right; }
 }
 
