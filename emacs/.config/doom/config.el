@@ -224,11 +224,13 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
         `(("." . ,(expand-file-name "backups/" doom-local-dir)))
         auto-save-file-name-transforms
         `((".*" ,(expand-file-name "auto-save/" doom-local-dir) t)))
-  ;; Doom's :os tty module enables `xclip-mode', which needs either Termux:API
-  ;; (`termux-clipboard-get') or `xclip'.  With neither installed it throws at
-  ;; enable time, so turn selections off until one of them exists.
-  (when (not (or (executable-find "termux-clipboard-get")
-                 (executable-find "xclip")))
+  ;; Doom's :os tty module does not enable xclip on Android, but xclip.el has a
+  ;; Termux backend (`termux-clipboard-get/set'), so enable it when that helper
+  ;; exists.  With no helper at all, turn selections off to avoid errors.
+  (if (or (executable-find "termux-clipboard-get")
+          (executable-find "xclip"))
+      (when (require 'xclip nil t)
+        (xclip-mode 1))
     (setq select-enable-clipboard nil
           select-enable-primary nil))
   (after! org
