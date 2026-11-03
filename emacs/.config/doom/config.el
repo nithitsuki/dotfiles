@@ -212,10 +212,13 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 
 ;; A capture opened from a fresh client frame otherwise splits the screen with
 ;; whatever was there (the dashboard).  `org-capture' displays its buffer with an
-;; explicit split action, and a matching `display-buffer-alist' entry takes
-;; precedence over that, so give capture the whole frame.
-(add-to-list 'display-buffer-alist
-             '("\\`CAPTURE-" display-buffer-full-frame))
+;; explicit split action, so override the action for that one call: the
+;; overriding action outranks both `display-buffer-alist' and the explicit one.
+(defun my/capture-full-frame (fn &rest args)
+  (let ((display-buffer-overriding-action '(display-buffer-full-frame)))
+    (apply fn args)))
+
+(advice-add 'org-capture-place-template :around #'my/capture-full-frame)
 
 ;; --- Journaling ergonomics (Termux) ------------------------------------------
 ;; The phone is a journaling device: one narrow terminal, a soft keyboard, and
