@@ -210,6 +210,11 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 (advice-add 'org-capture-finalize :after #'my/journal-capture-finish)
 (advice-add 'org-capture-kill :after #'my/journal-capture-finish)
 
+;; A capture opened from a fresh client frame otherwise splits the screen with
+;; whatever was there (the dashboard).  org-capture saves and restores the window
+;; layout itself, so giving it the whole frame is safe.
+(add-hook 'org-capture-mode-hook #'delete-other-windows)
+
 ;; --- Journaling ergonomics (Termux) ------------------------------------------
 ;; The phone is a journaling device: one narrow terminal, a soft keyboard, and
 ;; no window system.  These settings make org comfortable there.  The block is
@@ -227,12 +232,15 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
   (setq-default word-wrap t)
   ;; Shared storage is a FUSE mount watched by Syncthing: lock files would sync
   ;; as clutter or conflicts, and autosaves/backups belong on private storage.
-  (setq create-lockfiles nil
-        backup-by-copying t
-        backup-directory-alist
-        `(("." . ,(expand-file-name "backups/" doom-local-dir)))
-        auto-save-file-name-transforms
-        `((".*" ,(expand-file-name "auto-save/" doom-local-dir) t)))
+  ;; The directories must exist, or Emacs errors on the first auto-save.
+  (let ((auto-save-dir (expand-file-name "auto-save/" doom-local-dir))
+        (backup-dir (expand-file-name "backups/" doom-local-dir)))
+    (make-directory auto-save-dir t)
+    (make-directory backup-dir t)
+    (setq create-lockfiles nil
+          backup-by-copying t
+          backup-directory-alist `(("." . ,backup-dir))
+          auto-save-file-name-transforms `((".*" ,auto-save-dir t))))
   ;; Doom's :os tty module does not enable xclip on Android, but xclip.el has a
   ;; Termux backend (`termux-clipboard-get/set'), so enable it when that helper
   ;; exists.  With no helper at all, turn selections off to avoid errors.
