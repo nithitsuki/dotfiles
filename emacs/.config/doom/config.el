@@ -211,9 +211,11 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 (advice-add 'org-capture-kill :after #'my/journal-capture-finish)
 
 ;; A capture opened from a fresh client frame otherwise splits the screen with
-;; whatever was there (the dashboard).  org-capture saves and restores the window
-;; layout itself, so giving it the whole frame is safe.
-(add-hook 'org-capture-mode-hook #'delete-other-windows)
+;; whatever was there (the dashboard).  `org-capture' displays its buffer with an
+;; explicit split action, and a matching `display-buffer-alist' entry takes
+;; precedence over that, so give capture the whole frame.
+(add-to-list 'display-buffer-alist
+             '("\\`CAPTURE-" display-buffer-full-frame))
 
 ;; --- Journaling ergonomics (Termux) ------------------------------------------
 ;; The phone is a journaling device: one narrow terminal, a soft keyboard, and
