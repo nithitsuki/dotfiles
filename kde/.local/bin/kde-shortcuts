@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# Set the Plasma global shortcuts for kitty and Emacs (Client).
+#
+# Run this script inside a Plasma session. It registers each application with
+# kglobalaccel and sets its launch shortcut. The shortcuts apply immediately
+# and stay in ~/.config/kglobalshortcutsrc.
+#
+# Usage: kde-shortcuts
+set -euo pipefail
+
+# Qt key codes: modifier bits plus the key code.
+# ControlModifier = 0x04000000, AltModifier = 0x08000000.
+CTRL_ALT_T=$((0x0C000054))      # Ctrl+Alt+T
+CTRL_ALT_RETURN=$((0x0D000004)) # Ctrl+Alt+Return (Return = 0x01000004)
+CTRL_ALT_E=$((0x0C000045))      # Ctrl+Alt+E
+
+die() {
+    echo "$1" >&2
+    exit 1
+}
+
+command -v gdbus >/dev/null 2>&1 || die "gdbus is not installed."
+command -v kitty >/dev/null 2>&1 || die "kitty is not installed."
+command -v emacsclient >/dev/null 2>&1 || die "emacsclient is not installed."
+
+for desktop in kitty.desktop emacsclient.desktop; do
+    found=false
+    IFS=: read -ra data_dirs <<< "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    for dir in "${XDG_DATA_HOME:-$HOME/.local/share}" "${data_dirs[@]}"; do
+        if [[ -f "$dir/applications/$desktop" ]]; then
+            found=true
+            break
+        fi
+    done
+    if [[ "$found" != true ]]; then
+        die "The desktop file $desktop is missing."
+    fi
+done
+
+if ! gdbus call --session --dest org.kde.kglobalaccel --object-path /kglobalaccel \
+    --method org.kde.KGlobalAccel.allMainComponents >/dev/null 2>&1; then
+    die "kglobalaccel is not running. Start a Plasma session and run this script again."
+fi
+
+# Register the launch action. A registered action accepts a shortcut.
+register() {
+    local component="$1" friendly="$2"
+    gdbus call --session --dest org.kde.kglobalaccel --object-path /kglobalaccel \
+        --method org.kde.KGlobalAccel.doRegister \
+        "['$component', '_launch', '$friendly', '$friendly']" >/dev/null
+}
+
+# Report the component that owns a key. The result is empty for a free key.
+owner_of() {
+    gdbus call --session --dest org.kde.kglobalaccel --object-path /kglobalaccel \
+        --method org.kde.KGlobalAccel.action "$1"
+}
+
+# Set the shortcut keys. Each key is a Qt key code.
+set_keys() {
+    local component="$1" friendly="$2"
+    shift 2
+
+    local keys="" key result
+    for key in "$@"; do
+        keys+="([$key, 0, 0, 0],), "
+
+        result=$(owner_of "$key")
+        if [[ "$result" != *"'$component'"* && "$result" != *"[]"* ]]; then
+            die "The shortcut for $friendly clashes with another shortcut."
+        fi
+    done
+    keys="${keys%, }"
+
+    # 4 = KGlobalAccel::NoAutoloading: replace the saved shortcut.
+    gdbus call --session --dest org.kde.kglobalaccel --object-path /kglobalaccel \
+        --method org.kde.KGlobalAccel.setShortcutKeys \
+        "['$component', '_launch', '$friendly', '$friendly']" "[$keys]" 4 >/dev/null
+
+    for key in "$@"; do
+        if [[ "$(owner_of "$key")" != *"'$component'"* ]]; then
+            die "Could not set the shortcut for $friendly."
+        fi
+    done
+}
+
+# kitty: keep Ctrl+Alt+T and add the niri-style Ctrl+Alt+Return.
+register kitty.desktop "kitty"
+set_keys kitty.desktop "kitty" "$CTRL_ALT_RETURN" "$CTRL_ALT_T"
+
+# Emacs (Client): match the niri bind.
+register emacsclient.desktop "Emacs (Client)"
+set_keys emacsclient.desktop "Emacs (Client)" "$CTRL_ALT_E"
+
+echo "Applied: Ctrl+Alt+Return and Ctrl+Alt+T launch kitty."
+echo "Applied: Ctrl+Alt+E launches Emacs (Client)."

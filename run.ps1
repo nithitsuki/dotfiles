@@ -81,7 +81,7 @@ $ErrorActionPreference = 'Stop'
 
 # Packages that only make sense on Linux (Hyprland/Waybar/keyd/etc.).
 $LinuxOnlyPackages = @(
-    'hypr', 'waybar', 'keyd',
+    'hypr', 'kde', 'waybar', 'keyd',
     'xdg-desktop-portal', 'xdg-desktop-portal-termfilechooser'
 )
 

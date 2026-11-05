@@ -35,7 +35,8 @@ Options: `-Yes` (non-interactive), `-Packages emacs,zsh`, `-NoEmacs`,
 `-NoDaemon`, `-NoShortcuts`, `-NoFont`, `-DryRun`, `-Force`.
 
 Only `emacs`, `kitty`, `zsh` and `dot-pi` make sense on Windows; `hypr`,
-`hypryou`, `waybar`, `keyd` and the xdg-desktop-portal packages are Linux-only.
+`hypryou`, `kde`, `waybar`, `keyd` and the xdg-desktop-portal packages are
+Linux-only.
 
 ### Manual (stow)
 
@@ -134,6 +135,25 @@ policy and the GTK decoration layout):
 
 The existing `hypr` package is kept as the plain-Hyprland fallback. HyprYou uses
 its own `~/.config/hypryou/` and does not read `~/.config/hypr/`.
+
+## KDE Plasma
+
+The `kde` package stows the `kde-shortcuts` command to `~/.local/bin`. The
+command sets launch shortcuts for kitty and Emacs in a running Plasma session:
+
+```bash
+stow -t ~ --dotfiles kde
+kde-shortcuts
+```
+
+The command sets these shortcuts:
+
+- `Ctrl+Alt+Return` and `Ctrl+Alt+T` start kitty.
+- `Ctrl+Alt+E` starts Emacs (Client).
+
+The command replaces the existing launch shortcuts for these two applications.
+The shortcuts apply immediately and stay in `~/.config/kglobalshortcutsrc`.
+Run the command again after a Plasma update or a reset of the shortcut file.
 
 ## Coding Agents
 
