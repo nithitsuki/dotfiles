@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Emacs
+GenericName=Text Editor
+Comment=Open a new Emacs frame
+Exec=/usr/bin/emacsclient --alternate-editor= --create-frame --no-wait
+Icon=emacs
+Terminal=false
+Categories=Development;TextEditor;
+StartupNotify=true
+StartupWMClass=Emacs

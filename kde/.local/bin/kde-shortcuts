@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Set the Plasma global shortcuts for kitty and Emacs (Client).
+# Set the Plasma global shortcuts for kitty and Emacs.
 #
 # Run this script inside a Plasma session. It registers each application with
 # kglobalaccel and sets its launch shortcut. The shortcuts apply immediately
-# and stay in ~/.config/kglobalshortcutsrc.
+# and stay in ~/.config/kglobalshortcutsrc. It also enables the KWin script that
+# focuses a new Emacs frame.
 #
 # Usage: kde-shortcuts
 set -euo pipefail
@@ -23,7 +24,7 @@ command -v gdbus >/dev/null 2>&1 || die "gdbus is not installed."
 command -v kitty >/dev/null 2>&1 || die "kitty is not installed."
 command -v emacsclient >/dev/null 2>&1 || die "emacsclient is not installed."
 
-for desktop in kitty.desktop emacsclient.desktop; do
+for desktop in kitty.desktop emacsclient.desktop emacs-client.desktop; do
     found=false
     IFS=: read -ra data_dirs <<< "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
     for dir in "${XDG_DATA_HOME:-$HOME/.local/share}" "${data_dirs[@]}"; do
@@ -72,10 +73,10 @@ set_keys() {
     done
     keys="${keys%, }"
 
-    # 4 = KGlobalAccel::NoAutoloading: replace the saved shortcut.
+    # 6 = NoAutoloading | SetPresent: replace and activate the saved shortcut.
     gdbus call --session --dest org.kde.kglobalaccel --object-path /kglobalaccel \
         --method org.kde.KGlobalAccel.setShortcutKeys \
-        "['$component', '_launch', '$friendly', '$friendly']" "[$keys]" 4 >/dev/null
+        "['$component', '_launch', '$friendly', '$friendly']" "[$keys]" 6 >/dev/null
 
     for key in "$@"; do
         if [[ "$(owner_of "$key")" != *"'$component'"* ]]; then
@@ -84,13 +85,43 @@ set_keys() {
     done
 }
 
+# Rebuild the service cache so KGlobalAccel can find the local desktop file.
+if command -v kbuildsycoca6 >/dev/null 2>&1; then
+    kbuildsycoca6 --noincremental >/dev/null 2>&1 || true
+fi
+
 # kitty: keep Ctrl+Alt+T and add the niri-style Ctrl+Alt+Return.
 register kitty.desktop "kitty"
 set_keys kitty.desktop "kitty" "$CTRL_ALT_RETURN" "$CTRL_ALT_T"
 
-# Emacs (Client): match the niri bind.
-register emacsclient.desktop "Emacs (Client)"
-set_keys emacsclient.desktop "Emacs (Client)" "$CTRL_ALT_E"
+# Emacs: use a plain launcher, like kitty. Clear the stock desktop file first,
+# because it owns Ctrl+Alt+E from the earlier setup.
+gdbus call --session --dest org.kde.kglobalaccel --object-path /kglobalaccel \
+    --method org.kde.KGlobalAccel.setShortcutKeys \
+    "['emacsclient.desktop', '_launch', 'Emacs (Client)', 'Emacs (Client)']" "[]" 6 >/dev/null 2>&1 || true
+
+register emacs-client.desktop "Emacs"
+set_keys emacs-client.desktop "Emacs" "$CTRL_ALT_E"
 
 echo "Applied: Ctrl+Alt+Return and Ctrl+Alt+T launch kitty."
-echo "Applied: Ctrl+Alt+E launches Emacs (Client)."
+echo "Applied: Ctrl+Alt+E launches Emacs."
+
+# The Emacs daemon owns every frame, so KWin cannot link a frame to the
+# emacsclient launch.  Without this script, KWin leaves the new frame behind
+# the active window.  The script is part of the kde package.
+kwin_script="emacs-focus"
+kwin_main="${XDG_DATA_HOME:-$HOME/.local/share}/kwin/scripts/$kwin_script/contents/code/main.js"
+
+if [[ ! -f "$kwin_main" ]]; then
+    echo "Warning: the KWin script $kwin_script is missing. Stow the kde package." >&2
+elif ! command -v kwriteconfig6 >/dev/null 2>&1; then
+    echo "Warning: kwriteconfig6 is not installed. Cannot enable $kwin_script." >&2
+else
+    kwriteconfig6 --file kwinrc --group Plugins --key "${kwin_script}Enabled" true
+    if gdbus call --session --dest org.kde.KWin --object-path /KWin \
+        --method org.kde.KWin.reconfigure >/dev/null 2>&1; then
+        echo "Enabled the Emacs Focus KWin script."
+    else
+        echo "Warning: KWin did not reload the configuration. Log out and in again." >&2
+    fi
+fi

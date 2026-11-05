@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Id": "emacs-focus",
+        "Name": "Emacs Focus",
+        "Description": "Activate new Emacs frames",
+        "Icon": "emacs",
+        "Version": "1.0",
+        "License": "MIT",
+        "EnabledByDefault": false
+    },
+    "X-Plasma-API": "javascript"
+}
