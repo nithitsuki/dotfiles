@@ -190,11 +190,14 @@ times `my/org-latex-preview-magnify', tracking buffer text zoom."
 ;; --- Journaling --------------------------------------------------------------
 ;; One file, org's standard datetree, appended by `org-capture' (template "j").
 ;; `org-journal' cannot do this: it parses the date out of each filename.
+;; `:unnarrowed' shows the whole file during a capture, so the journal stays
+;; scrollable.  Org narrows to the new entry by default.
 (setq org-capture-templates
       `(("j" "Journal Entry" entry
          (file+olp+datetree ,(expand-file-name "Journal.org" my/org-directory))
          "* %<%H:%M>\n%?"
-         :empty-lines 1)))
+         :empty-lines 1
+         :unnarrowed t)))
 
 ;; The home-screen shortcut asks for this to be set before starting a capture;
 ;; finishing or aborting then closes the client frame so the phone goes back to
